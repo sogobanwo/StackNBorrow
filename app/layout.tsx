@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "StackNBorrow — Stack stocks. Borrow against them. Never sell.",
+  title: "StackNBorrow: Stack stocks. Borrow against them. Never sell.",
   description:
-    "Automate recurring stock buys on Solana, then borrow against your position instead of selling when you need cash — all powered by Jupiter's existing infrastructure.",
+    "Automate recurring stock buys on Solana, then borrow against your position instead of selling when you need cash all powered by Jupiter's existing infrastructure.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -9,16 +9,22 @@ import {
   CalendarIcon,
   FireIcon,
   HomeIcon,
+  OrdersIcon,
   PortfolioIcon,
   RefreshIcon,
   SetupIcon,
   TrendUpIcon,
 } from "./icons";
 
-const STATS = [
+const STATS: {
+  label: string;
+  value?: string;
+  change?: string | null;
+  icon?: typeof OrdersIcon;
+}[] = [
   { label: "Total Invested", value: "$480.00", change: "+18.5%" },
   { label: "Current Value", value: "$322.36", change: "+8.7%" },
-  { label: "Active Orders", value: "2", change: null },
+  { label: "Active Orders", icon: OrdersIcon },
   { label: "Available USDC", value: "$42.17", change: null },
 ];
 
@@ -80,7 +86,7 @@ export default function DashboardShowcase() {
           </div>
 
           {/* App mockup */}
-          <div className="relative -top-12 z-10 overflow-hidden rounded-b-3xl bg-card shadow-[0_-20px_60px_-15px_rgba(30,40,80,0.15)]">
+          <div className="relative z-10 mx-4 mb-4 mt-6 overflow-hidden rounded-3xl bg-card shadow-[0_20px_60px_-15px_rgba(30,40,80,0.15)] sm:mx-6 sm:mb-6 sm:mt-8 lg:mx-8 lg:mb-8">
             <div className="flex flex-col lg:flex-row">
               {/* Sidebar */}
               <aside className="flex shrink-0 flex-col justify-between border-b border-border bg-card px-6 py-7 lg:w-[240px] lg:border-b-0 lg:border-r">
@@ -165,9 +171,13 @@ export default function DashboardShowcase() {
                       className="rounded-2xl border border-border/60 bg-card px-4 py-4 shadow-sm shadow-slate-900/[0.02]"
                     >
                       <p className="text-xs text-muted">{stat.label}</p>
-                      <p className="mt-2 text-lg font-semibold text-heading">
-                        {stat.value}
-                      </p>
+                      {stat.icon ? (
+                        <stat.icon className="mt-2 h-5 w-5 text-primary" />
+                      ) : (
+                        <p className="mt-2 text-lg font-semibold text-heading">
+                          {stat.value}
+                        </p>
+                      )}
                       {stat.change && (
                         <p className="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-500">
                           <TrendUpIcon className="h-3 w-3" />
@@ -351,7 +361,7 @@ export default function DashboardShowcase() {
                           <p className="text-sm font-semibold text-amber-900/70">
                             Your Streak
                           </p>
-                          <TrophyIconBadge />
+                          <RibbonIconBadge />
                         </div>
                         <p className="mt-3 flex items-center gap-1.5 text-2xl font-bold text-amber-900">
                           <FireIcon className="h-5 w-5 text-orange-500" />
@@ -360,6 +370,7 @@ export default function DashboardShowcase() {
                         <p className="mt-1 text-xs text-amber-900/60">
                           Keep going! You&apos;re on a roll.
                         </p>
+                        <MiniStreakChart />
                       </div>
                     </div>
                   </div>
@@ -373,14 +384,33 @@ export default function DashboardShowcase() {
   );
 }
 
-function TrophyIconBadge() {
+function RibbonIconBadge() {
   return (
-    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/60 text-amber-600">
+    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/60 text-primary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
-        <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M8 5H5a3 3 0 0 0 3 4M16 5h3a3 3 0 0 1-3 4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 13v3M9 20h6M10 17h4v3h-4z" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="8" r="5" />
+        <path d="M9 12.5 7 21l5-2.5L17 21l-2-8.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
+  );
+}
+
+const STREAK_BARS = [30, 45, 65, 85, 100];
+
+function MiniStreakChart() {
+  return (
+    <div className="mt-4 flex items-end gap-1">
+      {STREAK_BARS.map((height, i) => (
+        <span
+          key={i}
+          style={{ height: `${height * 0.28}px` }}
+          className={
+            i % 2 === 0
+              ? "w-2.5 rounded-full bg-primary/50"
+              : "w-2.5 rounded-full bg-amber-400/70"
+          }
+        />
+      ))}
+    </div>
   );
 }

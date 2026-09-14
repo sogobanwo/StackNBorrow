@@ -12,7 +12,10 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <FeatureGrid />
-        <DashboardShowcase />
+        <div className="hidden lg:block">
+
+          <DashboardShowcase />
+        </div>
         <HowItWorks />
       </main>
       <Footer />

@@ -9,7 +9,7 @@ import { TrendUpIcon } from "./icons";
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative bg-[#e4e7f2]">
+    <section id="how-it-works" className="relative bg-[#E4E6F1]">
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-6 py-16 sm:px-10 md:grid-cols-3 lg:px-[116px] lg:py-20">
         {/* Card 1 */}
         <div className="rounded-3xl bg-subtle p-6 lg:p-7">
@@ -59,7 +59,7 @@ export default function HowItWorks() {
             2. Watch It Grow
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-body">
-            Track your position, order history and total value — all in one
+            Track your position, order history and total value all in one
             place.
           </p>
 
@@ -102,7 +102,7 @@ export default function HowItWorks() {
             3. Borrow Against It
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-body">
-            Deposit your stock as collateral and borrow USDC — without
+            Deposit your stock as collateral and borrow USDC without
             selling.
           </p>
 
