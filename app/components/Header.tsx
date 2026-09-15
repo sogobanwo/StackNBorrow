@@ -41,9 +41,12 @@ export default function Header() {
           ))}
         </nav>
 
-        <button className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/30 transition-colors hover:bg-primary-dark">
+        <Link
+          href="/dashboard"
+          className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/30 transition-colors hover:bg-primary-dark"
+        >
           Connect Wallet
-        </button>
+        </Link>
       </div>
     </header>
   );
