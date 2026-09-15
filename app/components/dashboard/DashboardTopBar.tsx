@@ -23,7 +23,7 @@ export default function DashboardTopBar({
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-muted">
           <BellIcon className="h-4 w-4" />
         </span>
-        <span className="h-9 w-9 rounded-full bg-linear-to-br from-primary to-indigo-400" />
+        <span className="h-9 w-9 rounded-full bg-primary" />
       </div>
     </div>
   );
