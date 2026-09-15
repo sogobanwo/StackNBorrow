@@ -11,15 +11,15 @@ const NAV_LINKS = [
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#e4e7f2]">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 sm:px-10 lg:px-[116px]">
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#F6F7FB] border-b border-border">
+      <div className="mx-auto flex max-w-360 items-center justify-between px-6 py-5 sm:px-10 lg:px-29">
         <Link href="#" className="flex items-center gap-2.5">
           <Image
             src={logoIcon}
             alt=""
             width={30}
             height={31}
-            className="h-[31px] w-[30px]"
+            className="h-7.75 w-7.5"
             priority
           />
           <span className="text-xl font-bold text-heading">StackNBorrow</span>

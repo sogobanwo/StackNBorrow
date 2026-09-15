@@ -3,9 +3,6 @@ import heroBg from "@/public/illustrations/hero-bg.png";
 import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
 import { CalendarIcon, DollarCircleIcon, PlayIcon } from "./icons";
 
-// Fluid sizing (clamp) so the floating cards scale continuously with the
-// viewport-width-driven illustration behind them, instead of staying a
-// fixed pixel size while the art scales up or down around them.
 const CARD_CLASSES =
   "absolute flex items-center gap-[clamp(0.5rem,0.8vw,0.875rem)] rounded-[clamp(0.875rem,1.2vw,1.25rem)] bg-white/90 px-[clamp(0.875rem,1.3vw,1.5rem)] py-[clamp(0.625rem,1vw,1.125rem)] shadow-lg shadow-slate-900/5 ring-1 ring-black/5 backdrop-blur";
 const CARD_ICON_CLASSES =
@@ -58,7 +55,7 @@ const HERO_BG_FADE_MASK =
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#D8DCE5] lg:flex lg:min-h-[560px] lg:items-center xl:min-h-[620px] 2xl:min-h-[700px]">
+    <section className="relative overflow-hidden bg-[#D8DCE5] lg:flex lg:min-h-140 lg:items-center xl:min-h-155 2xl:min-h-175">
     
       <div className="pointer-events-none absolute inset-0 hidden lg:block">
         <Image

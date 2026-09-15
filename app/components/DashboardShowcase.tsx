@@ -37,9 +37,9 @@ const NAV_ITEMS = [
 
 export default function DashboardShowcase() {
   return (
-    <section className="relative bg-[#e4e7f2]">
+    <section className="relative bg-[#F6F7FB]">
       <div className="mx-auto max-w-360 px-6 sm:px-10 lg:px-29">
-        <div className="relative overflow-hidden rounded-4xl bg-[#e4e7f2] pt-12">
+        <div className="relative overflow-hidden rounded-4xl bg-[#e4e7f2]">
           <div className="relative hidden items-center lg:flex lg:min-h-80">
             <Image
               src={dashboardIllustration}
@@ -62,34 +62,11 @@ export default function DashboardShowcase() {
             </div>
           </div>
 
-          {/* Mobile/tablet: stacked text + contained illustration */}
-          <div className="px-6 pb-10 pt-14 sm:px-10 lg:hidden">
-            <p className="text-sm font-medium tracking-[0.2em] text-muted uppercase">
-              Your Portfolio, In One Place
-            </p>
-            <h2 className="mt-4 text-[26px] font-bold leading-[1.1] text-heading sm:text-[36px]">
-              Build.Track.Borrow.
-            </h2>
-            <p className="mt-5 max-w-md text-lg leading-relaxed text-body">
-              Simple, powerful tools to help you grow your position and
-              access liquidity - on your terms.
-            </p>
-            <div className="relative mx-auto mt-6 h-[200px] w-full max-w-[520px] sm:h-[240px]">
-              <Image
-                src={dashboardIllustration}
-                alt="3D illustration of the StackNBorrow position: stacked blocks, an NVDAx card and a growth arrow"
-                fill
-                className="object-contain object-right"
-                sizes="520px"
-              />
-            </div>
-          </div>
-
           {/* App mockup */}
           <div className="relative z-10 mx-4 mb-4 mt-6 overflow-hidden rounded-3xl bg-card shadow-[0_20px_60px_-15px_rgba(30,40,80,0.15)] sm:mx-6 sm:mb-6 sm:mt-8 lg:mx-8 lg:mb-8">
             <div className="flex flex-col lg:flex-row">
               {/* Sidebar */}
-              <aside className="flex shrink-0 flex-col justify-between border-b border-border bg-card px-6 py-7 lg:w-[240px] lg:border-b-0 lg:border-r">
+              <aside className="flex shrink-0 flex-col justify-between border-b border-border bg-card px-6 py-7 lg:w-60 lg:border-b-0 lg:border-r">
                 <div>
                   <div className="flex items-center gap-2">
                     <Image
@@ -97,7 +74,7 @@ export default function DashboardShowcase() {
                       alt=""
                       width={20}
                       height={21}
-                      className="h-[21px] w-[20px]"
+                      className="h-5.25 w-5"
                     />
                     <span className="text-sm font-semibold text-heading">
                       StackNBorrow
@@ -159,7 +136,7 @@ export default function DashboardShowcase() {
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-muted">
                       <BellIcon className="h-4 w-4" />
                     </span>
-                    <span className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-indigo-400" />
+                    <span className="h-9 w-9 rounded-full bg-linear-to-br from-primary to-indigo-400" />
                   </div>
                 </div>
 
@@ -168,7 +145,7 @@ export default function DashboardShowcase() {
                   {STATS.map((stat) => (
                     <div
                       key={stat.label}
-                      className="rounded-2xl border border-border/60 bg-card px-4 py-4 shadow-sm shadow-slate-900/[0.02]"
+                      className="rounded-2xl border border-border/60 bg-card px-4 py-4 shadow-sm shadow-slate-900/2"
                     >
                       <p className="text-xs text-muted">{stat.label}</p>
                       {stat.icon ? (
@@ -191,12 +168,12 @@ export default function DashboardShowcase() {
                 {/* Tables + side panel */}
                 <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1fr_280px]">
                   <div className="min-w-0 space-y-5">
-                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/[0.02]">
+                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/2">
                       <h4 className="text-sm font-semibold text-heading">
                         Your Holdings
                       </h4>
                       <div className="mt-4 overflow-x-auto">
-                        <table className="w-full min-w-[480px] text-left text-sm">
+                        <table className="w-full min-w-120 text-left text-sm">
                           <thead>
                             <tr className="text-xs text-faint">
                               <th className="pb-3 font-medium">Asset</th>
@@ -213,7 +190,7 @@ export default function DashboardShowcase() {
                                   alt=""
                                   width={24}
                                   height={25}
-                                  className="h-[25px] w-[24px]"
+                                  className="h-6.25 w-6"
                                 />
                                 <span>
                                   <span className="block font-medium text-heading">
@@ -235,12 +212,12 @@ export default function DashboardShowcase() {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/[0.02]">
+                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/2">
                       <h4 className="text-sm font-semibold text-heading">
                         Active Orders
                       </h4>
                       <div className="mt-4 min-w-0 overflow-x-auto">
-                        <table className="w-full min-w-[420px] text-left text-sm">
+                        <table className="w-full min-w-105 text-left text-sm">
                           <thead>
                             <tr className="text-xs text-faint">
                               <th className="pb-3 pr-2 font-medium">Ticker</th>
@@ -275,7 +252,7 @@ export default function DashboardShowcase() {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/[0.02]">
+                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/2">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-semibold text-heading">
                           Order History
@@ -285,7 +262,7 @@ export default function DashboardShowcase() {
                         </span>
                       </div>
                       <div className="mt-4 min-w-0 overflow-x-auto">
-                        <table className="w-full min-w-[420px] text-left text-sm">
+                        <table className="w-full min-w-105 text-left text-sm">
                           <thead>
                             <tr className="text-xs text-faint">
                               <th className="pb-3 pr-2 font-medium">Ticker</th>
@@ -314,7 +291,7 @@ export default function DashboardShowcase() {
                   </div>
 
                   <div className="space-y-5">
-                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/[0.02]">
+                    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/2">
                       <h4 className="text-sm font-semibold text-heading">
                         Quick Actions
                       </h4>
@@ -356,7 +333,7 @@ export default function DashboardShowcase() {
                         className="object-cover"
                         sizes="280px"
                       />
-                      <div className="relative bg-gradient-to-br from-streak-from to-streak-to p-5">
+                      <div className="relative bg-linear-to-br from-streak-from to-streak-to p-5">
                         <div className="flex items-start justify-between">
                           <p className="text-sm font-semibold text-amber-900/70">
                             Your Streak

@@ -29,7 +29,7 @@ const FEATURES = [
 
 export default function FeatureGrid() {
   return (
-    <section id="features" className="relative bg-[#e4e7f2]">
+    <section id="features" className="relative bg-[#F6F7FB]">
       <div className="mx-auto grid max-w-360 grid-cols-1 gap-x-8 gap-y-8 px-6 py-8 sm:grid-cols-2 sm:px-10 lg:grid-cols-4 lg:px-29 lg:py-16">
         {FEATURES.map((feature) => (
           <div key={feature.title}>

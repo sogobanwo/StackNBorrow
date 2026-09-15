@@ -9,8 +9,8 @@ import { TrendUpIcon } from "./icons";
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative bg-[#E4E6F1]">
-      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-6 py-16 sm:px-10 md:grid-cols-3 lg:px-[116px] lg:py-20">
+    <section id="how-it-works" className="relative bg-[#F6F7FB]">
+      <div className="mx-auto grid max-w-360 grid-cols-1 gap-6 px-6 py-16 sm:px-10 md:grid-cols-3 lg:px-29 lg:py-20">
         {/* Card 1 */}
         <div className="rounded-3xl bg-subtle p-6 lg:p-7">
           <h3 className="text-lg font-semibold text-heading">
@@ -21,14 +21,14 @@ export default function HowItWorks() {
           </p>
 
           <div className="relative mt-6">
-            <div className="relative z-10 w-[70%] min-w-[160px] rounded-2xl bg-card p-4 shadow-sm shadow-slate-900/[0.03] lg:w-[65%]">
+            <div className="relative z-10 w-[70%] min-w-40 rounded-2xl bg-card p-4 shadow-sm shadow-slate-900/3 lg:w-[65%]">
               <div className="flex items-center gap-2 text-sm font-medium text-heading">
                 <Image
                   src={nvdaxLogo}
                   alt=""
                   width={20}
                   height={21}
-                  className="h-[21px] w-[20px]"
+                  className="h-5.25 w-5"
                 />
                 NVDAx
               </div>
@@ -48,7 +48,7 @@ export default function HowItWorks() {
               alt=""
               width={160}
               height={200}
-              className="absolute -right-4 top-1/2 z-20 w-[110px] -translate-y-1/2 object-contain sm:-right-2 lg:-right-8 lg:w-[150px]"
+              className="absolute -right-4 top-1/2 z-20 w-27.5 -translate-y-1/2 object-contain sm:-right-2 lg:-right-8 lg:w-37.5"
             />
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function HowItWorks() {
           </p>
 
           <div className="relative mt-6">
-            <div className="relative z-10 w-[70%] min-w-[160px] rounded-2xl bg-card p-4 shadow-sm shadow-slate-900/[0.03] lg:w-[65%]">
+            <div className="relative z-10 w-[70%] min-w-40 rounded-2xl bg-card p-4 shadow-sm shadow-slate-900/3 lg:w-[65%]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-faint">Portfolio Value</p>
@@ -91,7 +91,7 @@ export default function HowItWorks() {
               alt=""
               width={120}
               height={160}
-              className="absolute -right-4 bottom-0 z-20 w-[100px] object-contain sm:-right-2 lg:-right-8 lg:-bottom-2 lg:w-[130px]"
+              className="absolute -right-4 bottom-0 z-20 w-25 object-contain sm:-right-2 lg:-right-8 lg:-bottom-2 lg:w-32.5"
             />
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function HowItWorks() {
           </p>
 
           <div className="relative mt-6">
-            <div className="relative z-10 w-[70%] min-w-[160px] rounded-2xl bg-card p-4 shadow-sm shadow-slate-900/[0.03] lg:w-[65%]">
+            <div className="relative z-10 w-[70%] min-w-40 rounded-2xl bg-card p-4 shadow-sm shadow-slate-900/3 lg:w-[65%]">
               <p className="text-xs text-faint">Borrow USDC</p>
               <p className="text-base font-semibold text-heading">$200</p>
               <div className="mt-3 h-1.5 w-full rounded-full bg-subtle">
@@ -119,7 +119,7 @@ export default function HowItWorks() {
               </button>
             </div>
             
-            <div className="absolute -right-6 top-1/2 z-20 w-[120px] -translate-y-1/2 sm:-right-4 lg:-right-12 lg:w-[160px]">
+            <div className="absolute -right-6 top-1/2 z-20 w-30 -translate-y-1/2 sm:-right-4 lg:-right-12 lg:w-40">
               <Image
                 src={howitworks3a}
                 alt=""
