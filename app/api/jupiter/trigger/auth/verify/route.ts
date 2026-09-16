@@ -2,12 +2,12 @@ import { jupiterFetch } from "@/lib/jupiter/server";
 import type { AuthVerifyRequest, AuthVerifyResponse } from "@/lib/jupiter/types";
 
 export async function POST(request: Request): Promise<Response> {
-  const body = (await request.json()) as { walletPubkey: string; signedChallenge: string };
+  const body = (await request.json()) as { walletPubkey: string; signature: string };
 
   const payload: AuthVerifyRequest = {
     type: "message",
     walletPubkey: body.walletPubkey,
-    signedChallenge: body.signedChallenge,
+    signature: body.signature,
   };
 
   const res = await jupiterFetch("/trigger/v2/auth/verify", {

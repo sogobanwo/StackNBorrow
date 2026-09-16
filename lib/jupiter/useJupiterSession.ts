@@ -2,9 +2,13 @@
 
 import { useCallback, useState } from "react";
 import { useSigner } from "@/lib/wallet/useSigner";
+import { readApiError } from "@/lib/jupiter/apiError";
+import { withTimeout } from "@/lib/timeout";
 import type { AuthChallengeResponse, AuthVerifyResponse } from "@/lib/jupiter/types";
 
 const TOKEN_TTL_MS = 23 * 60 * 60 * 1000; // refresh a little before the real 24h expiry
+const SIGN_MESSAGE_TIMEOUT_MS = 60000; // generous — a human has to notice and approve the wallet popup
+const FETCH_TIMEOUT_MS = 25000;
 
 interface StoredToken {
   token: string;
@@ -73,30 +77,43 @@ export function useJupiterSession(): JupiterSession {
     setAuthenticating(true);
     setAuthError(null);
     try {
-      const challengeRes = await fetch("/api/jupiter/trigger/auth/challenge", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ walletPubkey: address }),
-      });
+      const challengeRes = await withTimeout(
+        fetch("/api/jupiter/trigger/auth/challenge", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ walletPubkey: address }),
+        }),
+        FETCH_TIMEOUT_MS,
+        "Timed out starting wallet verification. Try again."
+      );
       if (!challengeRes.ok) {
-        throw new Error("Could not start wallet verification. Try again.");
+        throw new Error(await readApiError(challengeRes, "Could not start wallet verification. Try again."));
       }
       const { challenge } = (await challengeRes.json()) as AuthChallengeResponse;
 
-      let signedChallenge: string;
+      let signature: string;
       try {
-        signedChallenge = await signMessage(challenge);
-      } catch {
+        signature = await withTimeout(
+          signMessage(challenge),
+          SIGN_MESSAGE_TIMEOUT_MS,
+          "Signature request timed out — check your wallet for a pending prompt."
+        );
+      } catch (signError) {
+        if (signError instanceof Error && signError.message.includes("timed out")) throw signError;
         throw new Error("Signature request was rejected.");
       }
 
-      const verifyRes = await fetch("/api/jupiter/trigger/auth/verify", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ walletPubkey: address, signedChallenge }),
-      });
+      const verifyRes = await withTimeout(
+        fetch("/api/jupiter/trigger/auth/verify", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ walletPubkey: address, signature }),
+        }),
+        FETCH_TIMEOUT_MS,
+        "Timed out verifying your wallet. Try again."
+      );
       if (!verifyRes.ok) {
-        throw new Error("Wallet verification failed. Try again.");
+        throw new Error(await readApiError(verifyRes, "Wallet verification failed. Try again."));
       }
       const { token: newToken } = (await verifyRes.json()) as AuthVerifyResponse;
 

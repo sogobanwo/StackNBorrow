@@ -6,6 +6,9 @@ import { getBase64EncodedWireTransaction, type SendableTransaction, type Transac
 import { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { useWalletModal } from "@/app/components/wallet/WalletModalProvider";
+import { withTimeout } from "@/lib/timeout";
+
+const WALLET_ACTION_TIMEOUT_MS = 60000; // generous — a human has to notice and act on the wallet popup
 
 // @solana/client's wallet.signTransaction/sendTransaction type an input transaction as already
 // "fully signed" — a quirk of the (experimental) package's types, not a real runtime requirement;
@@ -40,7 +43,11 @@ export function useSigner(): StackSigner {
       if (!wallet?.signMessage) {
         throw new Error("This wallet does not support message signing");
       }
-      const signature = await wallet.signMessage(new TextEncoder().encode(message));
+      const signature = await withTimeout(
+        wallet.signMessage(new TextEncoder().encode(message)),
+        WALLET_ACTION_TIMEOUT_MS,
+        "Signature request timed out — check your wallet for a pending prompt."
+      );
       return bs58.encode(signature);
     },
     [wallet]
@@ -52,7 +59,11 @@ export function useSigner(): StackSigner {
         throw new Error("This wallet does not support signing without sending");
       }
       const legacyTx = VersionedTransaction.deserialize(Buffer.from(base64Tx, "base64"));
-      const signed = await wallet.signTransaction(asSendable(fromVersionedTransaction(legacyTx)));
+      const signed = await withTimeout(
+        wallet.signTransaction(asSendable(fromVersionedTransaction(legacyTx))),
+        WALLET_ACTION_TIMEOUT_MS,
+        "Signature request timed out — check your wallet for a pending prompt."
+      );
       return getBase64EncodedWireTransaction(signed);
     },
     [wallet]
@@ -64,7 +75,11 @@ export function useSigner(): StackSigner {
         throw new Error("This wallet does not support sending transactions");
       }
       const legacyTx = VersionedTransaction.deserialize(Buffer.from(base64Tx, "base64"));
-      const signature = await wallet.sendTransaction(asSendable(fromVersionedTransaction(legacyTx)));
+      const signature = await withTimeout(
+        wallet.sendTransaction(asSendable(fromVersionedTransaction(legacyTx))),
+        WALLET_ACTION_TIMEOUT_MS,
+        "Signature request timed out — check your wallet for a pending prompt."
+      );
       return signature;
     },
     [wallet]

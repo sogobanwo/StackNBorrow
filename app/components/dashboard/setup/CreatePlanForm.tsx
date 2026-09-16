@@ -1,18 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
 import { AlertIcon, CalendarIcon, CheckIcon } from "@/app/components/icons";
-import { NVDAX_MINT, NVDAX_NAME, NVDAX_SYMBOL, USDC_DECIMALS, USDC_MINT } from "@/lib/jupiter/assets";
+import AssetSelector from "@/app/components/dashboard/AssetSelector";
+import { DEFAULT_ASSET, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { getReadonlyConnection, getSolBalance, getSplTokenBalance } from "@/lib/solana/balances";
+import { simulateTransactionBase64 } from "@/lib/solana/simulate";
 import type { CreateDcaOrderResponse, DepositCraftResponse } from "@/lib/jupiter/types";
 
 const FREQUENCIES = [
   { label: "Daily", seconds: 86400 },
   { label: "Weekly", seconds: 604800 },
   { label: "Monthly", seconds: 2592000 },
+];
+
+const DEMO_FREQUENCIES = [
+  { label: "1 min", seconds: 60 },
+  { label: "2 mins", seconds: 120 },
+  { label: "5 mins", seconds: 300 },
 ];
 
 const MIN_SOL_FOR_FEES = 0.01; // conservative buffer for a couple of transactions, not an exact fee quote
@@ -25,6 +31,7 @@ export default function CreatePlanForm({
   authedFetch,
   signTransaction,
   onPlanCreated,
+  demoMode,
 }: {
   connected: boolean;
   onConnect: () => void;
@@ -33,7 +40,10 @@ export default function CreatePlanForm({
   authedFetch: (path: string, init?: RequestInit) => Promise<Response>;
   signTransaction: (base64Tx: string) => Promise<string>;
   onPlanCreated: () => void;
+  demoMode: boolean;
 }) {
+  const frequencies = demoMode ? DEMO_FREQUENCIES : FREQUENCIES;
+  const [asset, setAsset] = useState<XStockAsset>(DEFAULT_ASSET);
   const [amount, setAmount] = useState("20");
   const [frequencySeconds, setFrequencySeconds] = useState(FREQUENCIES[1].seconds);
   const [orderCount, setOrderCount] = useState("4");
@@ -41,10 +51,22 @@ export default function CreatePlanForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<string | null>(null);
 
+  // Must reset to true in the effect body, not just rely on the useRef initializer — React 18
+  // Strict Mode's dev-only mount→cleanup→mount cycle otherwise leaves this stuck at false forever,
+  // which silently skips every setState below and leaves the button on "Creating Plan…" forever.
   const mountedRef = useRef(true);
-  useEffect(() => () => {
-    mountedRef.current = false;
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
+
+  const [prevDemoMode, setPrevDemoMode] = useState(demoMode);
+  if (demoMode !== prevDemoMode) {
+    setPrevDemoMode(demoMode);
+    setFrequencySeconds(frequencies[0].seconds);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,7 +124,7 @@ export default function CreatePlanForm({
         method: "POST",
         body: JSON.stringify({
           inputMint: USDC_MINT,
-          outputMint: NVDAX_MINT,
+          outputMint: asset.mint,
           userAddress: address,
           amount: totalAmountSmallestUnits,
         }),
@@ -111,6 +133,11 @@ export default function CreatePlanForm({
         throw new Error(await readApiError(depositRes, "Could not prepare the deposit. Try again."));
       }
       const deposit = (await depositRes.json()) as DepositCraftResponse;
+
+      const simulation = await simulateTransactionBase64(deposit.transaction);
+      if (!simulation.ok) {
+        throw new Error(`This deposit would fail on-chain: ${simulation.error}`);
+      }
 
       let depositSignedTx: string;
       try {
@@ -126,7 +153,7 @@ export default function CreatePlanForm({
           depositSignedTx,
           orderCount: rounds,
           intervalSeconds: frequencySeconds,
-          triggerMint: NVDAX_MINT,
+          triggerMint: asset.mint,
         }),
       });
       if (!orderRes.ok) {
@@ -151,10 +178,8 @@ export default function CreatePlanForm({
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <div>
           <label className="text-xs font-medium text-muted">Asset</label>
-          <div className="mt-1.5 flex items-center gap-2.5 rounded-xl border border-border bg-page px-4 py-3">
-            <Image src={nvdaxLogo} alt="" width={22} height={23} className="h-5.5 w-5.5" />
-            <span className="text-sm font-medium text-heading">{NVDAX_SYMBOL}</span>
-            <span className="text-xs text-faint">{NVDAX_NAME}</span>
+          <div className="mt-1.5">
+            <AssetSelector selected={asset} onSelect={setAsset} disabled={submitting} />
           </div>
         </div>
 
@@ -174,9 +199,12 @@ export default function CreatePlanForm({
         </div>
 
         <div>
-          <label className="text-xs font-medium text-muted">Frequency</label>
+          <label className="text-xs font-medium text-muted">
+            Frequency
+            {demoMode && <span className="ml-2 text-[10px] font-normal text-primary">Demo intervals</span>}
+          </label>
           <div className="mt-1.5 flex gap-2">
-            {FREQUENCIES.map((freq) => (
+            {frequencies.map((freq) => (
               <button
                 type="button"
                 key={freq.label}

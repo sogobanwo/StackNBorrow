@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useSigner } from "@/lib/wallet/useSigner";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { getReadonlyConnection, getSplTokenBalance } from "@/lib/solana/balances";
-import { NVDAX_DECIMALS, NVDAX_MINT, USDC_DECIMALS, USDC_MINT } from "@/lib/jupiter/assets";
+import { simulateTransactionBase64 } from "@/lib/solana/simulate";
+import { USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import type {
   LendBorrowVault,
   LendOperateRequest,
@@ -21,8 +22,8 @@ export interface BorrowData {
   rpcConfigured: boolean;
   vault: LendBorrowVault | null;
   position: LendPosition | null;
-  nvdaxWalletBalance: number | null;
-  nvdaxPriceUsd: number | null;
+  assetWalletBalance: number | null;
+  assetPriceUsd: number | null;
   collateralUiAmount: number;
   debtUiAmount: number;
   collateralValueUsd: number;
@@ -33,20 +34,20 @@ export interface BorrowData {
   maxBorrowUsd: number;
   submitting: boolean;
   submitError: string | null;
-  depositCollateral: (nvdaxAmount: number) => Promise<void>;
+  depositCollateral: (assetAmount: number) => Promise<void>;
   borrow: (usdcAmount: number) => Promise<void>;
   refresh: () => void;
 }
 
-export function useBorrowData(): BorrowData {
+export function useBorrowData(asset: XStockAsset): BorrowData {
   const { connected, address, signAndSendTransaction, login } = useSigner();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vault, setVault] = useState<LendBorrowVault | null>(null);
   const [position, setPosition] = useState<LendPosition | null>(null);
-  const [nvdaxWalletBalance, setNvdaxWalletBalance] = useState<number | null>(null);
-  const [nvdaxPriceUsd, setNvdaxPriceUsd] = useState<number | null>(null);
+  const [assetWalletBalance, setAssetWalletBalance] = useState<number | null>(null);
+  const [assetPriceUsd, setAssetPriceUsd] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -60,10 +61,13 @@ export function useBorrowData(): BorrowData {
       const vaultsRes = await fetch("/api/jupiter/lend/vaults");
       if (!vaultsRes.ok) throw new Error(await readApiError(vaultsRes, "Could not load lending markets."));
       const vaults = (await vaultsRes.json()) as LendBorrowVault[];
-      const nvdaxVault = vaults.find((v) => v.supplyToken === NVDAX_MINT && v.borrowToken === USDC_MINT) ?? null;
-      setVault(nvdaxVault);
+      const assetVault =
+        vaults.find((v) => v.supplyToken.address === asset.mint && v.borrowToken.address === USDC_MINT) ?? null;
+      setVault(assetVault);
 
-      if (nvdaxVault) {
+      if (assetVault) {
+        setAssetPriceUsd(Number(assetVault.supplyToken.price));
+
         const positionsRes = await fetch(
           `/api/jupiter/lend/positions?users=${encodeURIComponent(address)}`
         );
@@ -71,27 +75,24 @@ export function useBorrowData(): BorrowData {
           throw new Error(await readApiError(positionsRes, "Could not load your position."));
         }
         const positions = (await positionsRes.json()) as LendPosition[];
-        setPosition(positions.find((p) => p.vaultId === nvdaxVault.id) ?? null);
+        setPosition(positions.find((p) => p.vaultId === assetVault.id) ?? null);
+      } else {
+        setPosition(null);
+        const priceRes = await fetch(`/api/jupiter/price?ids=${asset.mint}`);
+        const priceData = priceRes.ok ? ((await priceRes.json()) as PriceResponse) : null;
+        setAssetPriceUsd(priceData?.[asset.mint]?.usdPrice ?? null);
       }
 
-      const pricePromise = fetch(`/api/jupiter/price?ids=${NVDAX_MINT}`)
-        .then((res) => (res.ok ? (res.json() as Promise<PriceResponse>) : null))
-        .then((data) => setNvdaxPriceUsd(data?.[NVDAX_MINT]?.usdPrice ?? null))
-        .catch(() => setNvdaxPriceUsd(null));
-
-      const balancePromise = (async () => {
-        const connection = getReadonlyConnection();
-        if (!connection) return;
-        setNvdaxWalletBalance(await getSplTokenBalance(connection, address, NVDAX_MINT));
-      })();
-
-      await Promise.all([pricePromise, balancePromise]);
+      const connection = getReadonlyConnection();
+      if (connection) {
+        setAssetWalletBalance(await getSplTokenBalance(connection, address, asset.mint));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load your borrow position.");
     } finally {
       setLoading(false);
     }
-  }, [address]);
+  }, [address, asset]);
 
   useEffect(() => {
     if (connected) {
@@ -99,12 +100,12 @@ export function useBorrowData(): BorrowData {
     }
   }, [connected, load]);
 
-  const collateralUiAmount = position ? Number(position.supply) / 10 ** NVDAX_DECIMALS : 0;
+  const collateralUiAmount = position ? Number(position.supply) / 10 ** asset.decimals : 0;
   const debtUiAmount = position ? Number(position.borrow) / 10 ** USDC_DECIMALS : 0;
-  const collateralValueUsd = nvdaxPriceUsd !== null ? collateralUiAmount * nvdaxPriceUsd : 0;
+  const collateralValueUsd = assetPriceUsd !== null ? collateralUiAmount * assetPriceUsd : 0;
   const debtValueUsd = debtUiAmount; // USDC ≈ $1
-  const maxLtv = vault ? vault.collateralFactor / 10000 : 0;
-  const liquidationLtv = vault ? vault.liquidationThreshold / 10000 : 0;
+  const maxLtv = vault ? Number(vault.collateralFactor) / 1000 : 0;
+  const liquidationLtv = vault ? Number(vault.liquidationThreshold) / 1000 : 0;
   const currentLtv = collateralValueUsd > 0 ? debtValueUsd / collateralValueUsd : 0;
   const maxBorrowUsd = Math.max(0, collateralValueUsd * maxLtv - debtValueUsd);
 
@@ -132,6 +133,11 @@ export function useBorrowData(): BorrowData {
       }
       const { transaction } = (await res.json()) as LendOperateResponse;
 
+      const simulation = await simulateTransactionBase64(transaction);
+      if (!simulation.ok) {
+        throw new Error(`This transaction would fail on-chain: ${simulation.error}`);
+      }
+
       try {
         await signAndSendTransaction(transaction);
       } catch {
@@ -147,8 +153,8 @@ export function useBorrowData(): BorrowData {
     }
   }
 
-  async function depositCollateral(nvdaxAmount: number): Promise<void> {
-    const smallestUnits = Math.round(nvdaxAmount * 10 ** NVDAX_DECIMALS).toString();
+  async function depositCollateral(assetAmount: number): Promise<void> {
+    const smallestUnits = Math.round(assetAmount * 10 ** asset.decimals).toString();
     await operate(smallestUnits, "0");
   }
 
@@ -165,8 +171,8 @@ export function useBorrowData(): BorrowData {
     rpcConfigured,
     vault,
     position,
-    nvdaxWalletBalance,
-    nvdaxPriceUsd,
+    assetWalletBalance,
+    assetPriceUsd,
     collateralUiAmount,
     debtUiAmount,
     collateralValueUsd,

@@ -1,4 +1,5 @@
 const JUPITER_BASE = "https://api.jup.ag";
+const JUPITER_TIMEOUT_MS = 20000;
 
 function requireApiKey(): string {
   const key = process.env.JUPITER_API_KEY;
@@ -13,9 +14,10 @@ export async function jupiterFetch(
   path: string,
   init: RequestInit & { bearerToken?: string } = {}
 ): Promise<Response> {
-  const { bearerToken, headers, ...rest } = init;
+  const { bearerToken, headers, signal, ...rest } = init;
   return fetch(`${JUPITER_BASE}${path}`, {
     ...rest,
+    signal: signal ?? AbortSignal.timeout(JUPITER_TIMEOUT_MS),
     headers: {
       "x-api-key": requireApiKey(),
       "content-type": "application/json",

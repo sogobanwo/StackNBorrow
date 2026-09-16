@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
 import { AlertIcon } from "@/app/components/icons";
-import { NVDAX_SYMBOL } from "@/lib/jupiter/assets";
+import AssetBadge from "@/app/components/dashboard/AssetBadge";
+import type { XStockAsset } from "@/lib/jupiter/assets";
 
 export default function DepositCollateralForm({
-  nvdaxWalletBalance,
+  asset,
+  assetWalletBalance,
   submitting,
   submitError,
   onDeposit,
 }: {
-  nvdaxWalletBalance: number | null;
+  asset: XStockAsset;
+  assetWalletBalance: number | null;
   submitting: boolean;
   submitError: string | null;
   onDeposit: (amount: number) => Promise<void>;
@@ -27,18 +28,18 @@ export default function DepositCollateralForm({
     await onDeposit(value);
   }
 
-  const hasBalance = nvdaxWalletBalance !== null && nvdaxWalletBalance > 0;
+  const hasBalance = assetWalletBalance !== null && assetWalletBalance > 0;
 
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm shadow-slate-900/2">
       <h4 className="text-sm font-semibold text-heading">Deposit Collateral</h4>
       <p className="mt-1 text-xs text-faint">
-        Deposit {NVDAX_SYMBOL} as collateral before you can borrow against it.
+        Deposit {asset.symbol} as collateral before you can borrow against it.
       </p>
 
       {!hasBalance ? (
         <p className="mt-5 text-sm text-muted">
-          You don&apos;t hold any {NVDAX_SYMBOL} yet — buy some from{" "}
+          You don&apos;t hold any {asset.symbol} yet — buy some from{" "}
           <Link href="/portfolio" className="font-medium text-primary">
             Portfolio
           </Link>{" "}
@@ -47,11 +48,11 @@ export default function DepositCollateralForm({
       ) : (
         <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
           <div className="flex items-center gap-2.5 rounded-xl border border-border bg-page px-4 py-3">
-            <Image src={nvdaxLogo} alt="" width={22} height={23} className="h-5.5 w-5.5" />
+            <AssetBadge asset={asset} className="h-6 w-6 text-[10px]" />
             <div>
-              <p className="text-sm font-medium text-heading">{NVDAX_SYMBOL} balance</p>
+              <p className="text-sm font-medium text-heading">{asset.symbol} balance</p>
               <p className="text-xs text-faint">
-                {nvdaxWalletBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })} {NVDAX_SYMBOL}
+                {assetWalletBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })} {asset.symbol}
               </p>
             </div>
           </div>

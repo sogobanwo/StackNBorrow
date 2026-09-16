@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import logoIcon from "@/public/illustrations/logo-icon.png";
-import { BorrowIcon, PortfolioIcon, SetupIcon } from "../icons";
+import { BorrowIcon, LogoutIcon, PortfolioIcon, SetupIcon } from "../icons";
+import { useSigner } from "@/lib/wallet/useSigner";
 
 const NAV_ITEMS = [
   { label: "Setup", href: "/setup", icon: SetupIcon },
@@ -14,6 +15,13 @@ const NAV_ITEMS = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { connected, address, logout } = useSigner();
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
 
   return (
     <aside className="flex shrink-0 flex-col justify-between border-b border-border bg-card px-6 py-7 lg:w-60 lg:border-b-0 lg:border-r">
@@ -44,23 +52,40 @@ export default function DashboardSidebar() {
           })}
         </nav>
       </div>
-      <div className="mt-10 flex items-center justify-between rounded-xl px-1 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+      <button
+        type="button"
+        onClick={handleLogout}
+        disabled={!connected}
+        className="mt-10 flex items-center justify-between rounded-xl px-1 py-3 text-left transition-colors hover:bg-subtle disabled:opacity-60"
+      >
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className={
+              connected
+                ? "h-2 w-2 shrink-0 rounded-full bg-emerald-500"
+                : "h-2 w-2 shrink-0 rounded-full bg-faint"
+            }
+          />
           <div className="min-w-0">
             <p className="text-[11px] font-medium text-muted">
-              Connected{" "}
-              <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
-                Solana
-              </span>
+              {connected ? (
+                <>
+                  Connected{" "}
+                  <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+                    Solana
+                  </span>
+                </>
+              ) : (
+                "Not connected"
+              )}
             </p>
-            <p className="truncate text-xs text-faint">1F3a...8HL2</p>
+            <p className="truncate text-xs text-faint">
+              {connected && address ? `${address.slice(0, 4)}...${address.slice(-4)}` : "—"}
+            </p>
           </div>
         </div>
-        <svg className="h-4 w-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
+        <LogoutIcon className="h-4 w-4 shrink-0 text-muted" />
+      </button>
     </aside>
   );
 }

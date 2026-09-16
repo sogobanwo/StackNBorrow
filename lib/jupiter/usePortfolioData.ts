@@ -5,8 +5,14 @@ import { useSigner } from "@/lib/wallet/useSigner";
 import { useJupiterSession } from "@/lib/jupiter/useJupiterSession";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { getReadonlyConnection, getSolBalance, getSplTokenBalance } from "@/lib/solana/balances";
-import { NVDAX_MINT, USDC_DECIMALS, USDC_MINT } from "@/lib/jupiter/assets";
+import { SUPPORTED_ASSETS, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import type { DcaOrderHistoryItem, DcaOrderHistoryResponse, PriceResponse } from "@/lib/jupiter/types";
+
+export interface AssetHolding {
+  asset: XStockAsset;
+  balance: number;
+  priceUsd: number | null;
+}
 
 export interface PortfolioData {
   connected: boolean;
@@ -17,10 +23,9 @@ export interface PortfolioData {
   loading: boolean;
   error: string | null;
   rpcConfigured: boolean;
-  nvdaxBalance: number | null;
+  holdings: AssetHolding[];
   usdcBalance: number | null;
   solBalance: number | null;
-  nvdaxPriceUsd: number | null;
   activeOrders: DcaOrderHistoryItem[];
   pastOrders: DcaOrderHistoryItem[];
   totalInvestedUsd: number | null;
@@ -35,10 +40,9 @@ export function usePortfolioData(): PortfolioData {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [nvdaxBalance, setNvdaxBalance] = useState<number | null>(null);
+  const [holdings, setHoldings] = useState<AssetHolding[]>([]);
   const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
   const [solBalance, setSolBalance] = useState<number | null>(null);
-  const [nvdaxPriceUsd, setNvdaxPriceUsd] = useState<number | null>(null);
   const [activeOrders, setActiveOrders] = useState<DcaOrderHistoryItem[]>([]);
   const [pastOrders, setPastOrders] = useState<DcaOrderHistoryItem[]>([]);
 
@@ -54,20 +58,35 @@ export function usePortfolioData(): PortfolioData {
       const balancePromise = (async () => {
         const connection = getReadonlyConnection();
         if (!connection) return;
-        const [nvdax, usdc, sol] = await Promise.all([
-          getSplTokenBalance(connection, address, NVDAX_MINT),
+        const [assetBalances, usdc, sol] = await Promise.all([
+          Promise.all(SUPPORTED_ASSETS.map((asset) => getSplTokenBalance(connection, address, asset.mint))),
           getSplTokenBalance(connection, address, USDC_MINT),
           getSolBalance(connection, address),
         ]);
-        setNvdaxBalance(nvdax);
+        setHoldings((prev) =>
+          SUPPORTED_ASSETS.map((asset, i) => ({
+            asset,
+            balance: assetBalances[i],
+            priceUsd: prev.find((h) => h.asset.mint === asset.mint)?.priceUsd ?? null,
+          }))
+        );
         setUsdcBalance(usdc);
         setSolBalance(sol);
       })();
 
-      const pricePromise = fetch(`/api/jupiter/price?ids=${NVDAX_MINT}`)
+      const priceIds = SUPPORTED_ASSETS.map((asset) => asset.mint).join(",");
+      const pricePromise = fetch(`/api/jupiter/price?ids=${priceIds}`)
         .then((res) => (res.ok ? (res.json() as Promise<PriceResponse>) : null))
-        .then((data) => setNvdaxPriceUsd(data?.[NVDAX_MINT]?.usdPrice ?? null))
-        .catch(() => setNvdaxPriceUsd(null));
+        .then((data) => {
+          setHoldings((prev) => {
+            const base = prev.length ? prev : SUPPORTED_ASSETS.map((asset) => ({ asset, balance: 0, priceUsd: null }));
+            return base.map((holding) => ({
+              ...holding,
+              priceUsd: data?.[holding.asset.mint]?.usdPrice ?? holding.priceUsd,
+            }));
+          });
+        })
+        .catch(() => undefined);
 
       const activeRes = await authedFetch("/api/jupiter/trigger/orders/dca/history?state=active");
       if (!activeRes.ok) throw new Error(await readApiError(activeRes, "Could not load active orders."));
@@ -98,8 +117,9 @@ export function usePortfolioData(): PortfolioData {
   const totalInvestedUsd = allOrders.length
     ? allOrders.reduce((sum, o) => sum + Number(o.inputAmountUsed) / 10 ** USDC_DECIMALS, 0)
     : null;
-  const currentValueUsd =
-    nvdaxBalance !== null && nvdaxPriceUsd !== null ? nvdaxBalance * nvdaxPriceUsd : null;
+  const currentValueUsd = holdings.length
+    ? holdings.reduce((sum, h) => sum + (h.priceUsd !== null ? h.balance * h.priceUsd : 0), 0)
+    : null;
   const totalRoundsFilled = allOrders.reduce((sum, o) => sum + o.roundsFilled, 0);
 
   return {
@@ -111,10 +131,9 @@ export function usePortfolioData(): PortfolioData {
     loading,
     error,
     rpcConfigured,
-    nvdaxBalance,
+    holdings,
     usdcBalance,
     solBalance,
-    nvdaxPriceUsd,
     activeOrders,
     pastOrders,
     totalInvestedUsd,

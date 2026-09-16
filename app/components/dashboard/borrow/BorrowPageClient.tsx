@@ -1,14 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import EmptyStateAction from "@/app/components/dashboard/EmptyStateAction";
+import AssetSelector from "@/app/components/dashboard/AssetSelector";
 import DepositCollateralForm from "@/app/components/dashboard/borrow/DepositCollateralForm";
 import BorrowForm from "@/app/components/dashboard/borrow/BorrowForm";
 import PositionSummary from "@/app/components/dashboard/borrow/PositionSummary";
 import { useBorrowData } from "@/lib/jupiter/useBorrowData";
-import { NVDAX_SYMBOL } from "@/lib/jupiter/assets";
+import { DEFAULT_ASSET, type XStockAsset } from "@/lib/jupiter/assets";
 
 export default function BorrowPageClient() {
-  const data = useBorrowData();
+  const [asset, setAsset] = useState<XStockAsset>(DEFAULT_ASSET);
+  const data = useBorrowData(asset);
 
   if (!data.connected) {
     return (
@@ -35,7 +38,11 @@ export default function BorrowPageClient() {
 
   return (
     <>
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-6">
+        <AssetSelector selected={asset} onSelect={setAsset} disabled={data.submitting} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -49,7 +56,7 @@ export default function BorrowPageClient() {
 
       {!data.rpcConfigured && (
         <p className="mt-3 text-xs text-faint">
-          Set NEXT_PUBLIC_SOLANA_RPC_URL to see your live {NVDAX_SYMBOL} wallet balance.
+          Set NEXT_PUBLIC_SOLANA_RPC_URL to see your live {asset.symbol} wallet balance.
         </p>
       )}
       {data.loading && <p className="mt-3 text-xs text-muted">Refreshing…</p>}
@@ -58,13 +65,14 @@ export default function BorrowPageClient() {
       )}
       {!data.loading && !data.error && !data.vault && (
         <div className="mt-4 rounded-xl bg-error-bg px-4 py-3 text-sm text-error-text">
-          No {NVDAX_SYMBOL} lending market found — it may not be listed as Lend collateral right now.
+          No {asset.symbol} lending market found — it may not be listed as Lend collateral right now.
         </div>
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.2fr]">
         {data.collateralUiAmount > 0 ? (
           <BorrowForm
+            asset={asset}
             collateralUiAmount={data.collateralUiAmount}
             collateralValueUsd={data.collateralValueUsd}
             debtValueUsd={data.debtValueUsd}
@@ -76,7 +84,8 @@ export default function BorrowPageClient() {
           />
         ) : (
           <DepositCollateralForm
-            nvdaxWalletBalance={data.nvdaxWalletBalance}
+            asset={asset}
+            assetWalletBalance={data.assetWalletBalance}
             submitting={data.submitting}
             submitError={data.submitError}
             onDeposit={data.depositCollateral}

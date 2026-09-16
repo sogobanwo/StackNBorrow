@@ -81,7 +81,7 @@ export default function PortfolioPageClient() {
 
       <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1fr_280px]">
         <div className="min-w-0 space-y-5">
-          <HoldingsTable nvdaxBalance={data.nvdaxBalance} nvdaxPriceUsd={data.nvdaxPriceUsd} />
+          <HoldingsTable holdings={data.holdings} />
           <OrdersTable title="Active Orders" orders={data.activeOrders} showNextBuy />
           <OrdersTable title="Order History" orders={data.pastOrders} showNextBuy={false} />
         </div>

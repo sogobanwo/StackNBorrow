@@ -14,11 +14,12 @@ export interface AuthChallengeResponse {
 export interface AuthVerifyRequest {
   type: "message";
   walletPubkey: string;
-  signedChallenge: string; // base58-encoded signature over the challenge string
+  signature: string; // base58-encoded signature over the challenge string — confirmed live 2026-09-16
 }
 
 export interface AuthVerifyResponse {
   token: string; // JWT, valid 24h
+  authMode?: string;
 }
 
 export interface DepositCraftRequest {
@@ -141,12 +142,23 @@ export interface SwapExecuteResponse {
 
 export type LendMarket = "main" | "ethena";
 
+export interface LendVaultToken {
+  address: string; // mint
+  name: string;
+  symbol: string;
+  uiSymbol: string;
+  decimals: number;
+  logoUrl: string;
+  price: string; // USD, as a string
+}
+
 export interface LendBorrowVault {
   id: number; // vaultId, used in /operate
-  supplyToken: string; // collateral mint
-  borrowToken: string; // debt mint
-  collateralFactor: number; // basis points, e.g. 800 = 80% max LTV
-  liquidationThreshold: number; // basis points
+  address: string; // vault account address
+  supplyToken: LendVaultToken; // collateral
+  borrowToken: LendVaultToken; // debt asset
+  collateralFactor: string; // basis points as a string, e.g. "800" = 80% max LTV — confirmed live 2026-09-16
+  liquidationThreshold: string; // basis points as a string
   borrowable: string; // available liquidity, base units
   withdrawable: string; // base units
   minimumBorrowing: string; // base units

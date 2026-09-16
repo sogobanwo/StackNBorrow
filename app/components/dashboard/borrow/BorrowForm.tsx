@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
 import { AlertIcon } from "@/app/components/icons";
-import { NVDAX_SYMBOL } from "@/lib/jupiter/assets";
+import AssetBadge from "@/app/components/dashboard/AssetBadge";
+import type { XStockAsset } from "@/lib/jupiter/assets";
 
 export default function BorrowForm({
+  asset,
   collateralUiAmount,
   collateralValueUsd,
   debtValueUsd,
@@ -16,6 +16,7 @@ export default function BorrowForm({
   submitError,
   onBorrow,
 }: {
+  asset: XStockAsset;
   collateralUiAmount: number;
   collateralValueUsd: number;
   debtValueUsd: number;
@@ -43,11 +44,11 @@ export default function BorrowForm({
       <h4 className="text-sm font-semibold text-heading">Borrow USDC</h4>
 
       <div className="mt-5 flex items-center gap-2.5 rounded-xl border border-border bg-page px-4 py-3">
-        <Image src={nvdaxLogo} alt="" width={22} height={23} className="h-5.5 w-5.5" />
+        <AssetBadge asset={asset} className="h-6 w-6 text-[10px]" />
         <div>
-          <p className="text-sm font-medium text-heading">{NVDAX_SYMBOL} collateral</p>
+          <p className="text-sm font-medium text-heading">{asset.symbol} collateral</p>
           <p className="text-xs text-faint">
-            {collateralUiAmount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {NVDAX_SYMBOL} · $
+            {collateralUiAmount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {asset.symbol} · $
             {collateralValueUsd.toFixed(2)}
           </p>
         </div>

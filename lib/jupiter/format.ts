@@ -1,4 +1,4 @@
-import { NVDAX_MINT, NVDAX_SYMBOL, USDC_DECIMALS } from "@/lib/jupiter/assets";
+import { findAssetByMint, USDC_DECIMALS } from "@/lib/jupiter/assets";
 
 /** History amounts come back in smallest units, same convention as deposit/craft — divide by 10^decimals to display. */
 export function formatTokenAmount(rawSmallestUnits: string, decimals: number = USDC_DECIMALS): string {
@@ -8,7 +8,8 @@ export function formatTokenAmount(rawSmallestUnits: string, decimals: number = U
 }
 
 export function symbolForTriggerMint(mint: string): string {
-  return mint === NVDAX_MINT ? NVDAX_SYMBOL : `${mint.slice(0, 4)}…${mint.slice(-4)}`;
+  const asset = findAssetByMint(mint);
+  return asset ? asset.symbol : `${mint.slice(0, 4)}…${mint.slice(-4)}`;
 }
 
 export function formatRelativeFuture(iso: string | null): string {

@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { AlertIcon, CheckIcon, RefreshIcon } from "@/app/components/icons";
-import { NVDAX_MINT, NVDAX_SYMBOL, USDC_DECIMALS, USDC_MINT } from "@/lib/jupiter/assets";
+import AssetSelector from "@/app/components/dashboard/AssetSelector";
+import { DEFAULT_ASSET, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import { readApiError } from "@/lib/jupiter/apiError";
+import { simulateTransactionBase64 } from "@/lib/solana/simulate";
 import { useSigner } from "@/lib/wallet/useSigner";
 import type { SwapExecuteResponse, SwapOrderResponse } from "@/lib/jupiter/types";
 
@@ -12,6 +14,7 @@ const DEFAULT_SLIPPAGE_BPS = 50; // 0.5% — a conservative default, not a Jupit
 export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
   const { connected, address, signTransaction } = useSigner();
   const [open, setOpen] = useState(false);
+  const [asset, setAsset] = useState<XStockAsset>(DEFAULT_ASSET);
   const [amount, setAmount] = useState("10");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +40,7 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
     try {
       const orderParams = new URLSearchParams({
         inputMint: USDC_MINT,
-        outputMint: NVDAX_MINT,
+        outputMint: asset.mint,
         amount: amountSmallestUnits,
         taker: address,
         slippageBps: String(DEFAULT_SLIPPAGE_BPS),
@@ -49,6 +52,11 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
       const order = (await orderRes.json()) as SwapOrderResponse;
       if (!order.transaction) {
         throw new Error(order.errorMessage ?? "No swap route available right now.");
+      }
+
+      const simulation = await simulateTransactionBase64(order.transaction);
+      if (!simulation.ok) {
+        throw new Error(`This swap would fail on-chain: ${simulation.error}`);
       }
 
       let signedTransaction: string;
@@ -100,7 +108,12 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
 
   return (
     <div className="rounded-xl border border-border bg-page p-4">
-      <label htmlFor="buy-now-amount" className="text-xs font-medium text-muted">
+      <label className="text-xs font-medium text-muted">Asset</label>
+      <div className="mt-1.5">
+        <AssetSelector selected={asset} onSelect={setAsset} disabled={submitting} />
+      </div>
+
+      <label htmlFor="buy-now-amount" className="mt-3 block text-xs font-medium text-muted">
         Amount (USDC)
       </label>
       <input
@@ -134,7 +147,7 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
           onClick={handleBuy}
           className="flex-1 rounded-xl bg-primary py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
         >
-          {submitting ? "Buying…" : `Buy ${NVDAX_SYMBOL}`}
+          {submitting ? "Buying…" : `Buy ${asset.symbol}`}
         </button>
         <button
           type="button"

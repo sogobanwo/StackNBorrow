@@ -1,4 +1,7 @@
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { withTimeout } from "@/lib/timeout";
+
+const RPC_TIMEOUT_MS = 8000;
 
 /** Returns null when NEXT_PUBLIC_SOLANA_RPC_URL isn't configured yet — callers should skip balance checks, not throw. */
 export function getReadonlyConnection(): Connection | null {
@@ -8,7 +11,11 @@ export function getReadonlyConnection(): Connection | null {
 }
 
 export async function getSolBalance(connection: Connection, owner: string): Promise<number> {
-  const lamports = await connection.getBalance(new PublicKey(owner));
+  const lamports = await withTimeout(
+    connection.getBalance(new PublicKey(owner)),
+    RPC_TIMEOUT_MS,
+    "RPC timed out fetching SOL balance."
+  );
   return lamports / LAMPORTS_PER_SOL;
 }
 
@@ -26,9 +33,11 @@ export async function getSplTokenBalance(
   owner: string,
   mint: string
 ): Promise<number> {
-  const accounts = await connection.getParsedTokenAccountsByOwner(new PublicKey(owner), {
-    mint: new PublicKey(mint),
-  });
+  const accounts = await withTimeout(
+    connection.getParsedTokenAccountsByOwner(new PublicKey(owner), { mint: new PublicKey(mint) }),
+    RPC_TIMEOUT_MS,
+    "RPC timed out fetching token balance."
+  );
   const first = accounts.value[0];
   return first ? readUiAmount(first.account.data.parsed) : 0;
 }

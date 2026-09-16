@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useSigner } from "@/lib/wallet/useSigner";
 import { useJupiterSession } from "@/lib/jupiter/useJupiterSession";
 import { readApiError } from "@/lib/jupiter/apiError";
+import { simulateTransactionBase64 } from "@/lib/solana/simulate";
+import DashboardTopBar from "@/app/components/dashboard/DashboardTopBar";
+import DemoModeToggle from "@/app/components/dashboard/setup/DemoModeToggle";
 import CreatePlanForm from "@/app/components/dashboard/setup/CreatePlanForm";
 import ActivePlansPanel from "@/app/components/dashboard/setup/ActivePlansPanel";
 import type {
@@ -15,6 +18,7 @@ import type {
 export default function SetupPageClient() {
   const { connected, address, login, signTransaction } = useSigner();
   const { token, authenticating, ensureToken, authedFetch } = useJupiterSession();
+  const [demoMode, setDemoMode] = useState(false);
 
   const [plans, setPlans] = useState<DcaOrderHistoryItem[] | null>(null);
   const [plansLoading, setPlansLoading] = useState(false);
@@ -64,6 +68,11 @@ export default function SetupPageClient() {
       }
       const initiate = (await initiateRes.json()) as CancelDcaInitiateResponse;
 
+      const simulation = await simulateTransactionBase64(initiate.transaction);
+      if (!simulation.ok) {
+        throw new Error(`This cancellation would fail on-chain: ${simulation.error}`);
+      }
+
       let signedTransaction: string;
       try {
         signedTransaction = await signTransaction(initiate.transaction);
@@ -88,29 +97,37 @@ export default function SetupPageClient() {
   }
 
   return (
-    <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.3fr]">
-      <CreatePlanForm
-        connected={connected}
-        onConnect={login}
-        address={address}
-        ensureToken={ensureToken}
-        authedFetch={authedFetch}
-        signTransaction={signTransaction}
-        onPlanCreated={loadPlans}
+    <>
+      <DashboardTopBar
+        title="Setup"
+        subtitle="Create and manage your recurring buy plans."
+        actions={<DemoModeToggle enabled={demoMode} onChange={setDemoMode} />}
       />
-      <ActivePlansPanel
-        connected={connected}
-        onConnect={login}
-        authenticating={authenticating}
-        needsVerification={connected && !token}
-        onVerify={loadPlans}
-        loading={plansLoading}
-        error={plansError}
-        onRetry={loadPlans}
-        plans={plans}
-        onCancel={handleCancel}
-        cancellingId={cancellingId}
-      />
-    </div>
+      <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.3fr]">
+        <CreatePlanForm
+          connected={connected}
+          onConnect={login}
+          address={address}
+          ensureToken={ensureToken}
+          authedFetch={authedFetch}
+          signTransaction={signTransaction}
+          onPlanCreated={loadPlans}
+          demoMode={demoMode}
+        />
+        <ActivePlansPanel
+          connected={connected}
+          onConnect={login}
+          authenticating={authenticating}
+          needsVerification={connected && !token}
+          onVerify={loadPlans}
+          loading={plansLoading}
+          error={plansError}
+          onRetry={loadPlans}
+          plans={plans}
+          onCancel={handleCancel}
+          cancellingId={cancellingId}
+        />
+      </div>
+    </>
   );
 }
