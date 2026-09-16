@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import logoIcon from "@/public/illustrations/logo-icon.png";
+import ConnectWalletButton from "./ConnectWalletButton";
 
 const NAV_LINKS = [
   { label: "Home", href: "#", active: true },
@@ -41,12 +42,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <Link
-          href="/dashboard"
-          className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/30 transition-colors hover:bg-primary-dark"
-        >
-          Connect Wallet
-        </Link>
+        <ConnectWalletButton className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-primary/30 transition-colors hover:bg-primary-dark disabled:opacity-60" />
       </div>
     </header>
   );
