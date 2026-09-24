@@ -7,7 +7,9 @@ import DepositCollateralForm from "@/app/components/dashboard/borrow/DepositColl
 import BorrowForm from "@/app/components/dashboard/borrow/BorrowForm";
 import PositionSummary from "@/app/components/dashboard/borrow/PositionSummary";
 import { useBorrowData } from "@/lib/jupiter/useBorrowData";
-import { DEFAULT_ASSET, type XStockAsset } from "@/lib/jupiter/assets";
+import { DEFAULT_ASSET, SUPPORTED_ASSETS, type XStockAsset } from "@/lib/jupiter/assets";
+
+const LEND_ELIGIBLE_ASSETS = SUPPORTED_ASSETS.filter((asset) => asset.lendEligible);
 
 export default function BorrowPageClient() {
   const [asset, setAsset] = useState<XStockAsset>(DEFAULT_ASSET);
@@ -39,7 +41,12 @@ export default function BorrowPageClient() {
   return (
     <>
       <div className="mt-6">
-        <AssetSelector selected={asset} onSelect={setAsset} disabled={data.submitting} />
+        <AssetSelector
+          selected={asset}
+          onSelect={setAsset}
+          disabled={data.submitting}
+          assets={LEND_ELIGIBLE_ASSETS}
+        />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">

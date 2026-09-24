@@ -192,5 +192,13 @@ export interface PriceResponse {
     blockId: number;
     decimals: number;
     priceChange24h: number;
+    // Present for tokenized-equity mints (e.g. Tessera T-Tokens) — Jupiter's own view of the
+    // underlying instrument, confirmed live via /price/v3 on 2026-09-24.
+    stockData?: {
+      id: string;
+      price: number;
+      mcap: number;
+      updatedAt: string;
+    };
   };
 }

@@ -4,13 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import logoIcon from "@/public/illustrations/logo-icon.png";
-import { BorrowIcon, LogoutIcon, PortfolioIcon, SetupIcon } from "../icons";
+import { BorrowIcon, CoinsIcon, LogoutIcon, PortfolioIcon, SetupIcon } from "../icons";
 import { useSigner } from "@/lib/wallet/useSigner";
 
 const NAV_ITEMS = [
   { label: "Setup", href: "/setup", icon: SetupIcon },
   { label: "Portfolio", href: "/portfolio", icon: PortfolioIcon },
   { label: "Borrow", href: "/borrow", icon: BorrowIcon },
+  { label: "Pre-IPO", href: "/prestocks", icon: CoinsIcon },
 ];
 
 export default function DashboardSidebar() {

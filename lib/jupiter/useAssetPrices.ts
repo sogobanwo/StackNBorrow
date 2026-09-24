@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SUPPORTED_ASSETS } from "@/lib/jupiter/assets";
+import { SUPPORTED_ASSETS, type XStockAsset } from "@/lib/jupiter/assets";
 import type { PriceResponse } from "@/lib/jupiter/types";
 
 export type AssetPrices = Record<string, number>; // mint -> usdPrice
 
-/** Live USD prices for all supported xStocks — one shared fetch, no wallet/auth needed. */
-export function useAssetPrices(): { prices: AssetPrices; loading: boolean } {
+/** Live USD prices for the given assets (defaults to all supported xStocks) — one shared fetch, no wallet/auth needed. */
+export function useAssetPrices(assets: readonly XStockAsset[] = SUPPORTED_ASSETS): {
+  prices: AssetPrices;
+  loading: boolean;
+} {
   const [prices, setPrices] = useState<AssetPrices>({});
   const [loading, setLoading] = useState(true);
+  const ids = assets.map((asset) => asset.mint).join(",");
 
   useEffect(() => {
     let cancelled = false;
-    const ids = SUPPORTED_ASSETS.map((asset) => asset.mint).join(",");
     fetch(`/api/jupiter/price?ids=${ids}`)
       .then((res) => (res.ok ? (res.json() as Promise<PriceResponse>) : null))
       .then((data) => {
         if (cancelled || !data) return;
         const next: AssetPrices = {};
-        for (const asset of SUPPORTED_ASSETS) {
-          const price = data[asset.mint]?.usdPrice;
-          if (price !== undefined) next[asset.mint] = price;
+        for (const id of ids.split(",")) {
+          const price = data[id]?.usdPrice;
+          if (price !== undefined) next[id] = price;
         }
         setPrices(next);
       })
@@ -32,7 +35,7 @@ export function useAssetPrices(): { prices: AssetPrices; loading: boolean } {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [ids]);
 
   return { prices, loading };
 }

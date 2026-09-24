@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertIcon, CalendarIcon, CheckIcon } from "@/app/components/icons";
 import AssetSelector from "@/app/components/dashboard/AssetSelector";
-import { DEFAULT_ASSET, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
+import { DEFAULT_ASSET, SUPPORTED_ASSETS, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { getReadonlyConnection, getSolBalance, getSplTokenBalance } from "@/lib/solana/balances";
 import { simulateTransactionBase64 } from "@/lib/solana/simulate";
@@ -32,6 +32,8 @@ export default function CreatePlanForm({
   signTransaction,
   onPlanCreated,
   demoMode,
+  assets = SUPPORTED_ASSETS,
+  defaultAsset = DEFAULT_ASSET,
 }: {
   connected: boolean;
   onConnect: () => void;
@@ -41,9 +43,11 @@ export default function CreatePlanForm({
   signTransaction: (base64Tx: string) => Promise<string>;
   onPlanCreated: () => void;
   demoMode: boolean;
+  assets?: readonly XStockAsset[];
+  defaultAsset?: XStockAsset;
 }) {
   const frequencies = demoMode ? DEMO_FREQUENCIES : FREQUENCIES;
-  const [asset, setAsset] = useState<XStockAsset>(DEFAULT_ASSET);
+  const [asset, setAsset] = useState<XStockAsset>(defaultAsset);
   const [amount, setAmount] = useState("20");
   const [frequencySeconds, setFrequencySeconds] = useState(FREQUENCIES[1].seconds);
   const [orderCount, setOrderCount] = useState("4");
@@ -179,7 +183,7 @@ export default function CreatePlanForm({
         <div>
           <label className="text-xs font-medium text-muted">Asset</label>
           <div className="mt-1.5">
-            <AssetSelector selected={asset} onSelect={setAsset} disabled={submitting} />
+            <AssetSelector selected={asset} onSelect={setAsset} disabled={submitting} assets={assets} />
           </div>
         </div>
 
