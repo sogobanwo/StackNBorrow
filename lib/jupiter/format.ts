@@ -12,6 +12,11 @@ export function symbolForTriggerMint(mint: string): string {
   return asset ? asset.symbol : `${mint.slice(0, 4)}…${mint.slice(-4)}`;
 }
 
+/** Compact USD for large valuations, e.g. 1267554501909 -> "$1.27T". */
+export function formatCompactUsd(value: number): string {
+  return `$${new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 2 }).format(value)}`;
+}
+
 export function formatRelativeFuture(iso: string | null): string {
   if (!iso) return "—";
   const target = new Date(iso).getTime();

@@ -12,6 +12,7 @@ export interface AssetHolding {
   asset: XStockAsset;
   balance: number;
   priceUsd: number | null;
+  stockData: PriceResponse[string]["stockData"] | null;
 }
 
 export interface PortfolioData {
@@ -68,6 +69,7 @@ export function usePortfolioData(): PortfolioData {
             asset,
             balance: assetBalances[i],
             priceUsd: prev.find((h) => h.asset.mint === asset.mint)?.priceUsd ?? null,
+            stockData: prev.find((h) => h.asset.mint === asset.mint)?.stockData ?? null,
           }))
         );
         setUsdcBalance(usdc);
@@ -79,10 +81,13 @@ export function usePortfolioData(): PortfolioData {
         .then((res) => (res.ok ? (res.json() as Promise<PriceResponse>) : null))
         .then((data) => {
           setHoldings((prev) => {
-            const base = prev.length ? prev : SUPPORTED_ASSETS.map((asset) => ({ asset, balance: 0, priceUsd: null }));
+            const base = prev.length
+              ? prev
+              : SUPPORTED_ASSETS.map((asset) => ({ asset, balance: 0, priceUsd: null, stockData: null }));
             return base.map((holding) => ({
               ...holding,
               priceUsd: data?.[holding.asset.mint]?.usdPrice ?? holding.priceUsd,
+              stockData: data?.[holding.asset.mint]?.stockData ?? holding.stockData,
             }));
           });
         })

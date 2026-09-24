@@ -78,7 +78,7 @@ export default function Hero() {
 
         <div className="relative z-10 grid grid-cols-1 items-center gap-12 py-8 lg:grid-cols-2 lg:gap-8 lg:py-22">
           <div>
-            <p className="lg:text-sm text-xs font-medium tracking-[0.2em] text-faint uppercase">
+            <p className="lg:text-sm text-xs font-medium tracking-[0.2em] uppercase">
               Invest &bull; Automate &bull; Borrow
             </p>
             <h1 className="mt-6 text-3xl font-bold leading-[1.15] text-heading sm:text-5xl">

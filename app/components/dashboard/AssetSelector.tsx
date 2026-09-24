@@ -8,16 +8,18 @@ export default function AssetSelector({
   selected,
   onSelect,
   disabled,
+  assets = SUPPORTED_ASSETS,
 }: {
   selected: XStockAsset;
   onSelect: (asset: XStockAsset) => void;
   disabled?: boolean;
+  assets?: readonly XStockAsset[];
 }) {
-  const { prices, loading } = useAssetPrices();
+  const { prices, loading } = useAssetPrices(assets);
 
   return (
     <div className="flex flex-wrap gap-2">
-      {SUPPORTED_ASSETS.map((asset) => {
+      {assets.map((asset) => {
         const active = asset.mint === selected.mint;
         const price = prices[asset.mint];
         return (
