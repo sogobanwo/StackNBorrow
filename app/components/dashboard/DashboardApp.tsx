@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import logoIcon from "@/public/illustrations/logo-icon.png";
-import { BorrowIcon, HomeIcon, PortfolioIcon, SetupIcon } from "../icons";
+import { BorrowIcon, CoinsIcon, HomeIcon, PortfolioIcon, SetupIcon } from "../icons";
 import DashboardHomeContent from "./DashboardHomeContent";
 
 const NAV_ITEMS = [
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { label: "Setup", icon: SetupIcon },
   { label: "Portfolio", icon: PortfolioIcon },
   { label: "Borrow", icon: BorrowIcon },
+  { label: "Pre-IPO", icon: CoinsIcon },
 ];
 
 export default function DashboardApp({

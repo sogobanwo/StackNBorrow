@@ -10,13 +10,13 @@ export default function ConnectWalletButton({ className }: { className: string }
 
   useEffect(() => {
     if (connected) {
-      router.push("/portfolio");
+      router.push("/home");
     }
   }, [connected, router]);
 
   function handleClick() {
     if (connected) {
-      router.push("/portfolio");
+      router.push("/home");
       return;
     }
     login();
