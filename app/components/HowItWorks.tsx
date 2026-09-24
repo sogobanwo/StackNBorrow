@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useScrollReveal } from "@/lib/motion/useScrollReveal";
 import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
 import minichartGrowth from "@/public/illustrations/minichart-growth.png";
 import howitworks1 from "@/public/illustrations/howitworks-1-illustration.png";
@@ -8,11 +11,16 @@ import howitworks3b from "@/public/illustrations/howitworks-3-illustration-b.png
 import { TrendUpIcon } from "./icons";
 
 export default function HowItWorks() {
+  const gridRef = useScrollReveal<HTMLDivElement>({ selector: ".howitworks-card", stagger: 0.2, y: 32 });
+
   return (
     <section id="how-it-works" className="relative bg-[#F6F7FB]">
-      <div className="mx-auto grid max-w-360 grid-cols-1 gap-6 px-6 py-16 sm:px-10 md:grid-cols-3 lg:px-29 lg:py-20">
+      <div
+        ref={gridRef}
+        className="mx-auto grid max-w-360 grid-cols-1 gap-6 px-6 py-16 sm:px-10 md:grid-cols-3 lg:px-29 lg:py-20"
+      >
         {/* Card 1 */}
-        <div className="rounded-3xl bg-subtle p-6 lg:p-7">
+        <div className="howitworks-card rounded-3xl bg-subtle p-6 lg:p-7">
           <h3 className="text-lg font-semibold text-heading">
             1. Set Up Your DCA Plan
           </h3>
@@ -54,7 +62,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Card 2 */}
-        <div className="rounded-3xl bg-subtle p-6 lg:p-7">
+        <div className="howitworks-card rounded-3xl bg-subtle p-6 lg:p-7">
           <h3 className="text-lg font-semibold text-heading">
             2. Watch It Grow
           </h3>
@@ -97,7 +105,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Card 3 */}
-        <div className="rounded-3xl bg-subtle p-6 lg:p-7">
+        <div className="howitworks-card rounded-3xl bg-subtle p-6 lg:p-7">
           <h3 className="text-lg font-semibold text-heading">
             3. Borrow Against It
           </h3>

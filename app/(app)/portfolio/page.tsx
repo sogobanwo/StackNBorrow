@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function PortfolioPage() {
   return (
     <>
-      <DashboardTopBar title="Portfolio" subtitle="Your stack is growing. Keep it up!" />
+      <DashboardTopBar title="Portfolio" subtitle="Track your holdings, active orders, and performance over time." />
       <PortfolioPageClient />
     </>
   );

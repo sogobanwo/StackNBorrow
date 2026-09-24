@@ -6,6 +6,7 @@ import AssetSelector from "@/app/components/dashboard/AssetSelector";
 import DepositCollateralForm from "@/app/components/dashboard/borrow/DepositCollateralForm";
 import BorrowForm from "@/app/components/dashboard/borrow/BorrowForm";
 import PositionSummary from "@/app/components/dashboard/borrow/PositionSummary";
+import StatTile from "@/app/components/dashboard/StatTile";
 import { useBorrowData } from "@/lib/jupiter/useBorrowData";
 import { DEFAULT_ASSET, SUPPORTED_ASSETS, type XStockAsset } from "@/lib/jupiter/assets";
 
@@ -28,13 +29,14 @@ export default function BorrowPageClient() {
     );
   }
 
-  const stats = [
-    { label: "Collateral Value", value: `$${data.collateralValueUsd.toFixed(2)}` },
-    { label: "Borrowing Power", value: `$${data.maxBorrowUsd.toFixed(2)}` },
-    { label: "Current Debt", value: `$${data.debtValueUsd.toFixed(2)}` },
+  const stats: { label: string; value: number | null; formatter: (v: number) => string }[] = [
+    { label: "Collateral Value", value: data.collateralValueUsd, formatter: (v) => `$${v.toFixed(2)}` },
+    { label: "Borrowing Power", value: data.maxBorrowUsd, formatter: (v) => `$${v.toFixed(2)}` },
+    { label: "Current Debt", value: data.debtValueUsd, formatter: (v) => `$${v.toFixed(2)}` },
     {
       label: "Current LTV",
-      value: data.debtValueUsd > 0 ? `${(data.currentLtv * 100).toFixed(1)}%` : "—",
+      value: data.debtValueUsd > 0 ? data.currentLtv * 100 : null,
+      formatter: (v) => `${v.toFixed(1)}%`,
     },
   ];
 
@@ -51,13 +53,7 @@ export default function BorrowPageClient() {
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-2xl border border-border/60 bg-card px-4 py-4 shadow-sm shadow-slate-900/2"
-          >
-            <p className="text-xs text-muted">{stat.label}</p>
-            <p className="mt-2 text-lg font-semibold text-heading">{stat.value}</p>
-          </div>
+          <StatTile key={stat.label} label={stat.label} value={stat.value} formatter={stat.formatter} />
         ))}
       </div>
 

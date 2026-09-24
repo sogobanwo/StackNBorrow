@@ -1,8 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import dashboardIllustration from "@/public/illustrations/dashboard-illustration.png";
 import DashboardApp from "./dashboard/DashboardApp";
+import { useTextReveal } from "@/lib/motion/useTextReveal";
+import { useScrollReveal } from "@/lib/motion/useScrollReveal";
 
 export default function DashboardShowcase() {
+  const headingRef = useTextReveal<HTMLHeadingElement>();
+  const mockupRef = useScrollReveal<HTMLDivElement>({ y: 16, start: "top 80%" });
+
   return (
     <section className="relative bg-[#F6F7FB]">
       <div className="mx-auto max-w-360 px-6 sm:px-10 lg:px-29">
@@ -19,7 +26,7 @@ export default function DashboardShowcase() {
               <p className="text-sm font-medium tracking-[0.2em] text-muted uppercase">
                 Your Portfolio, In One Place
               </p>
-              <h2 className="mt-4 text-[42px] font-bold leading-[1.1] text-heading xl:text-[48px]">
+              <h2 ref={headingRef} className="mt-4 text-[42px] font-bold leading-[1.1] text-heading xl:text-[48px]">
                 Build.Track.Borrow.
               </h2>
               <p className="mt-5 max-w-md text-lg leading-relaxed text-body">
@@ -30,7 +37,10 @@ export default function DashboardShowcase() {
           </div>
 
           {/* App mockup */}
-          <div className="relative z-10 mx-4 mb-4 mt-6 overflow-hidden rounded-3xl bg-card shadow-[0_20px_60px_-15px_rgba(30,40,80,0.15)] sm:mx-6 sm:mb-6 sm:mt-8 lg:mx-8 lg:mb-8">
+          <div
+            ref={mockupRef}
+            className="relative z-10 mx-4 mb-4 mt-6 overflow-hidden rounded-3xl bg-card shadow-[0_20px_60px_-15px_rgba(30,40,80,0.15)] sm:mx-6 sm:mb-6 sm:mt-8 lg:mx-8 lg:mb-8"
+          >
             <DashboardApp />
           </div>
         </div>

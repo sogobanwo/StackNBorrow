@@ -1,19 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { AlertIcon, CheckIcon, RefreshIcon } from "@/app/components/icons";
+import { AlertIcon, CheckIcon } from "@/app/components/icons";
 import AssetSelector from "@/app/components/dashboard/AssetSelector";
+import EmptyStateAction from "@/app/components/dashboard/EmptyStateAction";
+import HoldingsTable from "@/app/components/dashboard/portfolio/HoldingsTable";
 import { DEFAULT_ASSET, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { simulateTransactionBase64 } from "@/lib/solana/simulate";
 import { useSigner } from "@/lib/wallet/useSigner";
+import { usePortfolioData } from "@/lib/jupiter/usePortfolioData";
 import type { SwapExecuteResponse, SwapOrderResponse } from "@/lib/jupiter/types";
 
 const DEFAULT_SLIPPAGE_BPS = 50; // 0.5% — a conservative default, not a Jupiter-mandated value
 
-export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
-  const { connected, address, signTransaction } = useSigner();
-  const [open, setOpen] = useState(false);
+export default function BuyPageClient() {
+  const { address, signTransaction } = useSigner();
+  const data = usePortfolioData();
   const [asset, setAsset] = useState<XStockAsset>(DEFAULT_ASSET);
   const [amount, setAmount] = useState("10");
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +24,7 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
   const [signature, setSignature] = useState<string | null>(null);
 
   async function handleBuy() {
-    if (!connected || !address) {
+    if (!data.connected || !address) {
       setError("Connect your wallet first.");
       return;
     }
@@ -80,7 +83,7 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
       }
 
       setSignature(result.signature);
-      onSwapped();
+      data.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Swap failed.");
     } finally {
@@ -88,76 +91,68 @@ export default function BuyNowPanel({ onSwapped }: { onSwapped: () => void }) {
     }
   }
 
-  if (!open) {
+  if (!data.connected) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-3 rounded-xl bg-primary/5 px-4 py-3 text-left"
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <RefreshIcon className="h-4 w-4" />
-        </span>
-        <span>
-          <span className="block text-sm font-medium text-heading">Buy Now</span>
-          <span className="block text-xs text-faint">One time purchase</span>
-        </span>
-      </button>
+      <div className="mt-6 rounded-2xl border border-border/60 bg-card p-6">
+        <EmptyStateAction
+          title="Connect your wallet"
+          body="Connect a wallet to buy now."
+          actionLabel="Connect Wallet"
+          onAction={data.onConnect}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border bg-page p-4">
-      <label className="text-xs font-medium text-muted">Asset</label>
-      <div className="mt-1.5">
-        <AssetSelector selected={asset} onSelect={setAsset} disabled={submitting} />
-      </div>
+    <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.3fr]">
+      <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm shadow-slate-900/2">
+        <h4 className="text-sm font-semibold text-heading">Buy Now</h4>
+        <p className="mt-1 text-xs text-faint">A one-time purchase, settled immediately via Jupiter Swap.</p>
 
-      <label htmlFor="buy-now-amount" className="mt-3 block text-xs font-medium text-muted">
-        Amount (USDC)
-      </label>
-      <input
-        id="buy-now-amount"
-        type="text"
-        inputMode="decimal"
-        value={amount}
-        onChange={(event) => setAmount(event.target.value)}
-        disabled={submitting}
-        className="mt-1.5 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-heading outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
-      />
-
-      {error && (
-        <div className="mt-3 flex items-start gap-2 rounded-lg bg-error-bg px-3 py-2 text-xs text-error-text">
-          <AlertIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <p>{error}</p>
+        <label className="mt-5 block text-xs font-medium text-muted">Asset</label>
+        <div className="mt-1.5">
+          <AssetSelector selected={asset} onSelect={setAsset} disabled={submitting} />
         </div>
-      )}
 
-      {signature && (
-        <div className="mt-3 flex items-start gap-2 rounded-lg bg-success-bg px-3 py-2 text-xs text-success-text">
-          <CheckIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <p>Swap sent — {signature.slice(0, 8)}…</p>
-        </div>
-      )}
+        <label htmlFor="buy-amount" className="mt-4 block text-xs font-medium text-muted">
+          Amount (USDC)
+        </label>
+        <input
+          id="buy-amount"
+          type="text"
+          inputMode="decimal"
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+          disabled={submitting}
+          className="mt-1.5 w-full rounded-xl border border-border bg-page px-3 py-2 text-sm text-heading outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+        />
 
-      <div className="mt-3 flex gap-2">
+        {error && (
+          <div className="mt-4 flex items-start gap-2 rounded-lg bg-error-bg px-3 py-2 text-xs text-error-text">
+            <AlertIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {signature && (
+          <div className="mt-4 flex items-start gap-2 rounded-lg bg-success-bg px-3 py-2 text-xs text-success-text">
+            <CheckIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <p>Bought — {signature.slice(0, 8)}… is confirmed.</p>
+          </div>
+        )}
+
         <button
           type="button"
           disabled={submitting}
           onClick={handleBuy}
-          className="flex-1 rounded-xl bg-primary py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
+          className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
         >
           {submitting ? "Buying…" : `Buy ${asset.symbol}`}
         </button>
-        <button
-          type="button"
-          disabled={submitting}
-          onClick={() => setOpen(false)}
-          className="rounded-xl bg-subtle px-3 py-2 text-xs font-medium text-muted"
-        >
-          Cancel
-        </button>
       </div>
+
+      <HoldingsTable holdings={data.holdings} />
     </div>
   );
 }

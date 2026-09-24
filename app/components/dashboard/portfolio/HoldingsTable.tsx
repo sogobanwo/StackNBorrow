@@ -5,10 +5,12 @@ import type { AssetHolding } from "@/lib/jupiter/usePortfolioData";
 import { formatCompactUsd } from "@/lib/jupiter/format";
 import { usePythPrices } from "@/lib/pyth/usePythPrices";
 import { PYTH_EQUITY_FEED_BY_MINT } from "@/lib/pyth/feeds";
+import { useRowReveal } from "@/lib/motion/useRowReveal";
 
 export default function HoldingsTable({ holdings }: { holdings: AssetHolding[] }) {
   const held = holdings.filter((h) => h.balance > 0);
   const { prices: equityPrices, error: pythError } = usePythPrices();
+  const tbodyRef = useRowReveal<HTMLTableSectionElement>(held.length);
 
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/2">
@@ -30,7 +32,7 @@ export default function HoldingsTable({ holdings }: { holdings: AssetHolding[] }
                 <th className="pb-3 font-medium">USD Value</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref={tbodyRef}>
               {held.map(({ asset, balance, priceUsd, stockData }) => {
                 const equityPrice = equityPrices[asset.mint];
                 const pegDeviationPct =

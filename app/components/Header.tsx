@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import logoIcon from "@/public/illustrations/logo-icon.png";
 import ConnectWalletButton from "./ConnectWalletButton";
 
@@ -11,8 +14,25 @@ const NAV_LINKS = [
 ];
 
 export default function Header() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#F6F7FB] border-b border-border">
+    <header
+      className={
+        scrolled
+          ? "sticky top-0 z-50 backdrop-blur-md bg-[#F6F7FB] border-b border-border shadow-sm shadow-slate-900/5 transition-shadow"
+          : "sticky top-0 z-50 backdrop-blur-md bg-[#F6F7FB] border-b border-border shadow-none transition-shadow"
+      }
+    >
       <div className="mx-auto flex max-w-360 items-center justify-between px-6 py-5 sm:px-10 lg:px-29">
         <Link href="#" className="flex items-center gap-2.5">
           <Image

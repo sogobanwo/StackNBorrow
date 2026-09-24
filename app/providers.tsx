@@ -3,6 +3,7 @@
 import { autoDiscover, createClient } from "@solana/client";
 import { SolanaProvider } from "@solana/react-hooks";
 import { WalletModalProvider } from "@/app/components/wallet/WalletModalProvider";
+import SmoothScroll from "@/lib/motion/SmoothScroll";
 
 const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
 
@@ -15,7 +16,9 @@ const solanaClient = createClient(
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SolanaProvider client={solanaClient}>
-      <WalletModalProvider>{children}</WalletModalProvider>
+      <WalletModalProvider>
+        <SmoothScroll>{children}</SmoothScroll>
+      </WalletModalProvider>
     </SolanaProvider>
   );
 }

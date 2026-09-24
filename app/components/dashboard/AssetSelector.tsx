@@ -3,6 +3,7 @@
 import { SUPPORTED_ASSETS, type XStockAsset } from "@/lib/jupiter/assets";
 import AssetBadge from "@/app/components/dashboard/AssetBadge";
 import { useAssetPrices } from "@/lib/jupiter/useAssetPrices";
+import { gsap } from "@/lib/motion/gsap";
 
 export default function AssetSelector({
   selected,
@@ -27,7 +28,12 @@ export default function AssetSelector({
             key={asset.mint}
             type="button"
             disabled={disabled}
-            onClick={() => onSelect(asset)}
+            onClick={(e) => {
+              onSelect(asset);
+              if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                gsap.fromTo(e.currentTarget, { scale: 0.94 }, { scale: 1, duration: 0.3, ease: "power2.out" });
+              }
+            }}
             className={
               active
                 ? "flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-left text-sm font-medium text-white disabled:opacity-60"

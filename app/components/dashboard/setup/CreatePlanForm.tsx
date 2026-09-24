@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AlertIcon, CalendarIcon, CheckIcon } from "@/app/components/icons";
+import { gsap } from "@/lib/motion/gsap";
 import AssetSelector from "@/app/components/dashboard/AssetSelector";
 import { DEFAULT_ASSET, SUPPORTED_ASSETS, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import { readApiError } from "@/lib/jupiter/apiError";
@@ -54,6 +55,13 @@ export default function CreatePlanForm({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<string | null>(null);
+  const successRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!successId || !successRef.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.from(successRef.current, { opacity: 0, scale: 0.96, duration: 0.35, ease: "power2.out" });
+  }, [successId]);
 
   // Must reset to true in the effect body, not just rely on the useRef initializer — React 18
   // Strict Mode's dev-only mount→cleanup→mount cycle otherwise leaves this stuck at false forever,
@@ -252,7 +260,7 @@ export default function CreatePlanForm({
         )}
 
         {successId && (
-          <div className="flex items-start gap-2.5 rounded-xl bg-success-bg px-4 py-3 text-sm text-success-text">
+          <div ref={successRef} className="flex items-start gap-2.5 rounded-xl bg-success-bg px-4 py-3 text-sm text-success-text">
             <CheckIcon className="mt-0.5 h-4 w-4 shrink-0" />
             <p>Plan created — order {successId.slice(0, 8)}… is live.</p>
           </div>
