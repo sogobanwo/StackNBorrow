@@ -8,6 +8,7 @@ import HoldingsTable from "@/app/components/dashboard/portfolio/HoldingsTable";
 import OrdersTable from "@/app/components/dashboard/portfolio/OrdersTable";
 import BuyNowPanel from "@/app/components/dashboard/portfolio/BuyNowPanel";
 import StreakCard from "@/app/components/dashboard/portfolio/StreakCard";
+import StatTile from "@/app/components/dashboard/StatTile";
 
 export default function PortfolioPageClient() {
   const data = usePortfolioData();
@@ -39,33 +40,18 @@ export default function PortfolioPageClient() {
     );
   }
 
-  const stats = [
-    {
-      label: "Total Invested",
-      value: data.totalInvestedUsd !== null ? `$${data.totalInvestedUsd.toFixed(2)}` : "—",
-    },
-    {
-      label: "Current Value",
-      value: data.currentValueUsd !== null ? `$${data.currentValueUsd.toFixed(2)}` : "—",
-    },
-    { label: "Active Orders", value: String(data.activeOrders.length) },
-    {
-      label: "Available USDC",
-      value: data.usdcBalance !== null ? `$${data.usdcBalance.toFixed(2)}` : "—",
-    },
+  const stats: { label: string; value: number | null; formatter: (v: number) => string }[] = [
+    { label: "Total Invested", value: data.totalInvestedUsd, formatter: (v) => `$${v.toFixed(2)}` },
+    { label: "Current Value", value: data.currentValueUsd, formatter: (v) => `$${v.toFixed(2)}` },
+    { label: "Active Orders", value: data.activeOrders.length, formatter: (v) => String(Math.round(v)) },
+    { label: "Available USDC", value: data.usdcBalance, formatter: (v) => `$${v.toFixed(2)}` },
   ];
 
   return (
     <>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-2xl border border-border/60 bg-card px-4 py-4 shadow-sm shadow-slate-900/2"
-          >
-            <p className="text-xs text-muted">{stat.label}</p>
-            <p className="mt-2 text-lg font-semibold text-heading">{stat.value}</p>
-          </div>
+          <StatTile key={stat.label} label={stat.label} value={stat.value} formatter={stat.formatter} />
         ))}
       </div>
 

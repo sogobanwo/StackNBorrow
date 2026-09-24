@@ -4,6 +4,7 @@ import PlanRow from "@/app/components/dashboard/setup/PlanRow";
 import EmptyStateAction from "@/app/components/dashboard/EmptyStateAction";
 import { AlertIcon } from "@/app/components/icons";
 import type { DcaOrderHistoryItem } from "@/lib/jupiter/types";
+import { useRowReveal } from "@/lib/motion/useRowReveal";
 
 export default function ActivePlansPanel({
   connected,
@@ -30,6 +31,8 @@ export default function ActivePlansPanel({
   onCancel: (plan: DcaOrderHistoryItem) => void;
   cancellingId: string | null;
 }) {
+  const tbodyRef = useRowReveal<HTMLTableSectionElement>(plans?.length ?? 0);
+
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-slate-900/2">
       <h4 className="text-sm font-semibold text-heading">Your Active Plans</h4>
@@ -87,7 +90,7 @@ export default function ActivePlansPanel({
                 <th className="pb-3" />
               </tr>
             </thead>
-            <tbody>
+            <tbody ref={tbodyRef}>
               {plans.map((plan) => (
                 <PlanRow key={plan.id} plan={plan} onCancel={onCancel} cancelling={cancellingId === plan.id} />
               ))}

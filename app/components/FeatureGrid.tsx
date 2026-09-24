@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useScrollReveal } from "@/lib/motion/useScrollReveal";
 import automateIcon from "@/public/illustrations/feature-icon-automate.png";
 import trackIcon from "@/public/illustrations/feature-icon-track.png";
 import borrowIcon from "@/public/illustrations/feature-icon-borrow.png";
@@ -28,11 +31,16 @@ const FEATURES = [
 ];
 
 export default function FeatureGrid() {
+  const gridRef = useScrollReveal<HTMLDivElement>({ selector: ".feature-item", stagger: 0.1 });
+
   return (
     <section id="features" className="relative bg-[#F6F7FB]">
-      <div className="mx-auto grid max-w-360 grid-cols-1 gap-x-8 gap-y-8 px-6 py-8 sm:grid-cols-2 sm:px-10 lg:grid-cols-4 lg:px-29 lg:py-16">
+      <div
+        ref={gridRef}
+        className="mx-auto grid max-w-360 grid-cols-1 gap-x-8 gap-y-8 px-6 py-8 sm:grid-cols-2 sm:px-10 lg:grid-cols-4 lg:px-29 lg:py-16"
+      >
         {FEATURES.map((feature) => (
-          <div key={feature.title}>
+          <div key={feature.title} className="feature-item">
             <Image
               src={feature.icon}
               alt=""

@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import logoIcon from "@/public/illustrations/logo-icon.png";
 import { BorrowIcon, CoinsIcon, LogoutIcon, PortfolioIcon, SetupIcon } from "../icons";
 import { useSigner } from "@/lib/wallet/useSigner";
+import { gsap } from "@/lib/motion/gsap";
 
 const NAV_ITEMS = [
   { label: "Setup", href: "/setup", icon: SetupIcon },
@@ -18,6 +20,32 @@ export default function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { connected, address, logout } = useSigner();
+  const navRef = useRef<HTMLElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const hasPositionedPill = useRef(false);
+
+  useEffect(() => {
+    const activeEl = itemRefs.current[pathname];
+    if (!activeEl || !pillRef.current || !navRef.current) return;
+
+    const navBox = navRef.current.getBoundingClientRect();
+    const itemBox = activeEl.getBoundingClientRect();
+    const vars = {
+      x: itemBox.left - navBox.left,
+      y: itemBox.top - navBox.top,
+      width: itemBox.width,
+      height: itemBox.height,
+    };
+
+    if (!hasPositionedPill.current) {
+      gsap.set(pillRef.current, vars);
+      hasPositionedPill.current = true;
+    } else {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      gsap.to(pillRef.current, { ...vars, duration: prefersReducedMotion ? 0 : 0.4, ease: "power3.out" });
+    }
+  }, [pathname]);
 
   async function handleLogout() {
     await logout();
@@ -33,17 +61,21 @@ export default function DashboardSidebar() {
             StackNBorrow
           </span>
         </Link>
-        <nav className="mt-8 flex flex-col gap-1.5">
+        <nav ref={navRef} className="relative mt-8 flex flex-col gap-1.5">
+          <div ref={pillRef} className="absolute top-0 left-0 rounded-xl bg-primary" />
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
                 key={item.label}
                 href={item.href}
+                ref={(el) => {
+                  itemRefs.current[item.href] = el;
+                }}
                 className={
                   active
-                    ? "flex items-center gap-3 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white"
-                    : "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-subtle hover:text-heading"
+                    ? "relative z-10 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-white"
+                    : "relative z-10 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-subtle hover:text-heading"
                 }
               >
                 <item.icon className="h-4 w-4" />

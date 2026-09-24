@@ -1,11 +1,16 @@
+"use client";
+
 import Image from "next/image";
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { gsap, SplitText } from "@/lib/motion/gsap";
 import heroBg from "@/public/illustrations/hero-bg.png";
 import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
 import { CalendarIcon, DollarCircleIcon, PlayIcon } from "./icons";
 import ConnectWalletButton from "./ConnectWalletButton";
 
 const CARD_CLASSES =
-  "absolute flex items-center gap-[clamp(0.5rem,0.8vw,0.875rem)] rounded-[clamp(0.875rem,1.2vw,1.25rem)] bg-white/90 px-[clamp(0.875rem,1.3vw,1.5rem)] py-[clamp(0.625rem,1vw,1.125rem)] shadow-lg shadow-slate-900/5 ring-1 ring-black/5 backdrop-blur";
+  "hero-card absolute flex items-center gap-[clamp(0.5rem,0.8vw,0.875rem)] rounded-[clamp(0.875rem,1.2vw,1.25rem)] bg-white/90 px-[clamp(0.875rem,1.3vw,1.5rem)] py-[clamp(0.625rem,1vw,1.125rem)] shadow-lg shadow-slate-900/5 ring-1 ring-black/5 backdrop-blur";
 const CARD_ICON_CLASSES =
   "flex shrink-0 items-center justify-center h-[clamp(2rem,2.8vw,3rem)] w-[clamp(2rem,2.8vw,3rem)] rounded-[clamp(0.75rem,1vw,1rem)]";
 const CARD_ICON_SVG_CLASSES = "h-[clamp(1rem,1.4vw,1.375rem)] w-[clamp(1rem,1.4vw,1.375rem)]";
@@ -55,10 +60,65 @@ const HERO_BG_FADE_MASK =
   "radial-gradient(ellipse 95% 92% at 58% 50%, black 60%, transparent 100%)";
 
 export default function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+  const eyebrowRef = useRef<HTMLParagraphElement>(null);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const subheadRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        if (!headlineRef.current) return;
+
+        SplitText.create(headlineRef.current, {
+          type: "lines",
+          mask: "lines",
+          onSplit: (self) => {
+            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+            tl.from(eyebrowRef.current, { opacity: 0, y: 12, duration: 0.6 })
+              .from(self.lines, { yPercent: 110, opacity: 0, stagger: 0.08, duration: 0.8 }, "-=0.35")
+              .from(subheadRef.current, { opacity: 0, y: 16, duration: 0.6 }, "-=0.4")
+              .from(ctaRef.current ? Array.from(ctaRef.current.children) : [], { opacity: 0, y: 16, stagger: 0.08, duration: 0.5 }, "-=0.3")
+              .from(".hero-card", { opacity: 0, scale: 0.85, stagger: 0.1, duration: 0.6 }, "-=0.2")
+              .add(() => {
+                gsap.to(".hero-card", {
+                  y: "+=10",
+                  duration: 3.2,
+                  ease: "sine.inOut",
+                  yoyo: true,
+                  repeat: -1,
+                  stagger: { each: 0.3, from: "random" },
+                });
+              });
+            return tl;
+          },
+        });
+
+        if (bgRef.current) {
+          gsap.to(bgRef.current, {
+            yPercent: 12,
+            ease: "none",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top top",
+              end: "bottom top",
+              scrub: true,
+            },
+          });
+        }
+      });
+    },
+    { scope: sectionRef }
+  );
+
   return (
-    <section className="relative overflow-hidden bg-[#D8DCE5] lg:flex lg:min-h-140 lg:items-center xl:min-h-155 2xl:min-h-175">
-    
-      <div className="pointer-events-none absolute inset-0 hidden lg:block">
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#D8DCE5] lg:flex lg:min-h-140 lg:items-center xl:min-h-155 2xl:min-h-175"
+    >
+      <div ref={bgRef} className="pointer-events-none absolute inset-0 hidden lg:block">
         <Image
           src={heroBg}
           alt="StackNBorrow app showing an automated NVDAx stock position, next to a recurring-buy calendar and borrowable USDC coins"
@@ -78,22 +138,22 @@ export default function Hero() {
 
         <div className="relative z-10 grid grid-cols-1 items-center gap-12 py-8 lg:grid-cols-2 lg:gap-8 lg:py-22">
           <div>
-            <p className="lg:text-sm text-xs font-medium tracking-[0.2em] uppercase">
+            <p ref={eyebrowRef} className="lg:text-sm text-xs font-medium tracking-[0.2em] uppercase">
               Invest &bull; Automate &bull; Borrow
             </p>
-            <h1 className="mt-6 text-3xl font-bold leading-[1.15] text-heading sm:text-5xl">
+            <h1 ref={headlineRef} className="mt-6 text-3xl font-bold leading-[1.15] text-heading sm:text-5xl">
               Stack stocks.
               <br />
               Borrow against them.
               <br />
               Never sell.
             </h1>
-            <p className="mt-7 max-w-lg text-sm lg:text-lg leading-relaxed text-body">
+            <p ref={subheadRef} className="mt-7 max-w-lg text-sm lg:text-lg leading-relaxed text-body">
               Automate recurring stock buys on Solana, then borrow against
               your position instead of selling when you need cash all
               powered by Jupiter&apos;s existing infrastructure.
             </p>
-            <div className="mt-10 flex items-center gap-4">
+            <div ref={ctaRef} className="mt-10 flex items-center gap-4">
               <ConnectWalletButton className="rounded-2xl bg-primary px-6 py-3 text-xs lg:px-8 lg:py-4 lg:text-base font-semibold text-white shadow-lg shadow-primary/30 transition-colors hover:bg-primary-dark disabled:opacity-60" />
               <button className="flex items-center gap-2.5 rounded-2xl bg-subtle px-3 py-3 text-xs lg:px-7 lg:py-4 lg:text-base font-semibold text-body transition-colors hover:bg-border border">
                 <PlayIcon className="h-4 w-4" />
