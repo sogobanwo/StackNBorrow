@@ -1,13 +1,56 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, SplitText } from "@/lib/motion/gsap";
 import heroBg from "@/public/illustrations/hero-bg.png";
 import nvdaxLogo from "@/public/illustrations/nvdax-logo.png";
-import { CalendarIcon, DollarCircleIcon, PlayIcon } from "./icons";
+import { CalendarIcon, CloseIcon, DollarCircleIcon, PlayIcon } from "./icons";
 import ConnectWalletButton from "./ConnectWalletButton";
+
+const DEMO_VIDEO_EMBED_URL = "https://www.youtube.com/embed/D2WPZK1xUKU?autoplay=1";
+
+function DemoVideoModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy/70 px-4"
+      onClick={onClose}
+    >
+      <div className="relative w-full max-w-3xl" onClick={(event) => event.stopPropagation()}>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close demo video"
+          className="absolute -top-10 right-0 text-white/80 transition-colors hover:text-white"
+        >
+          <CloseIcon className="h-6 w-6" />
+        </button>
+        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-2xl">
+          <iframe
+            src={DEMO_VIDEO_EMBED_URL}
+            title="StackNBorrow demo video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="h-full w-full"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const CARD_CLASSES =
   "hero-card absolute flex items-center gap-[clamp(0.5rem,0.8vw,0.875rem)] rounded-[clamp(0.875rem,1.2vw,1.25rem)] bg-white/90 px-[clamp(0.875rem,1.3vw,1.5rem)] py-[clamp(0.625rem,1vw,1.125rem)] shadow-lg shadow-slate-900/5 ring-1 ring-black/5 backdrop-blur";
@@ -66,6 +109,7 @@ export default function Hero() {
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const subheadRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   useGSAP(
     () => {
@@ -155,7 +199,11 @@ export default function Hero() {
             </p>
             <div ref={ctaRef} className="mt-10 flex items-center gap-4">
               <ConnectWalletButton className="rounded-2xl bg-primary px-6 py-3 text-xs lg:px-8 lg:py-4 lg:text-base font-semibold text-white shadow-lg shadow-primary/30 transition-colors hover:bg-primary-dark disabled:opacity-60" />
-              <button className="flex items-center gap-2.5 rounded-2xl bg-subtle px-3 py-3 text-xs lg:px-7 lg:py-4 lg:text-base font-semibold text-body transition-colors hover:bg-border border">
+              <button
+                type="button"
+                onClick={() => setIsDemoOpen(true)}
+                className="flex items-center gap-2.5 rounded-2xl bg-subtle px-3 py-3 text-xs lg:px-7 lg:py-4 lg:text-base font-semibold text-body transition-colors hover:bg-border border"
+              >
                 <PlayIcon className="h-4 w-4" />
                 Watch Demo
               </button>
@@ -163,6 +211,8 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+      {isDemoOpen && <DemoVideoModal onClose={() => setIsDemoOpen(false)} />}
     </section>
   );
 }
