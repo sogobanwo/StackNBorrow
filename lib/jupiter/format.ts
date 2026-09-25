@@ -7,7 +7,8 @@ export function formatTokenAmount(rawSmallestUnits: string, decimals: number = U
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-export function symbolForTriggerMint(mint: string): string {
+export function symbolForMint(mint: string | null | undefined): string {
+  if (!mint) return "Unknown";
   const asset = findAssetByMint(mint);
   return asset ? asset.symbol : `${mint.slice(0, 4)}…${mint.slice(-4)}`;
 }

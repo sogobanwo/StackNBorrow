@@ -5,7 +5,12 @@ import { useSigner } from "@/lib/wallet/useSigner";
 import { useJupiterSession } from "@/lib/jupiter/useJupiterSession";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { getReadonlyConnection, getSolBalance, getSplTokenBalance } from "@/lib/solana/balances";
-import { SUPPORTED_ASSETS, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
+import { PRESTOCKS_ASSETS, SUPPORTED_ASSETS, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
+
+// Portfolio's Holdings table shows everything the wallet actually holds, so unlike /setup's
+// plan-creation picker or /borrow's collateral list, it includes PreStocks alongside the
+// SUPPORTED_ASSETS — see the note next to PRESTOCKS_ASSETS in lib/jupiter/assets.ts.
+const PORTFOLIO_ASSETS: readonly XStockAsset[] = [...SUPPORTED_ASSETS, ...PRESTOCKS_ASSETS];
 import type { DcaOrderHistoryItem, DcaOrderHistoryResponse, PriceResponse } from "@/lib/jupiter/types";
 
 export interface AssetHolding {
@@ -60,12 +65,12 @@ export function usePortfolioData(): PortfolioData {
         const connection = getReadonlyConnection();
         if (!connection) return;
         const [assetBalances, usdc, sol] = await Promise.all([
-          Promise.all(SUPPORTED_ASSETS.map((asset) => getSplTokenBalance(connection, address, asset.mint))),
+          Promise.all(PORTFOLIO_ASSETS.map((asset) => getSplTokenBalance(connection, address, asset.mint))),
           getSplTokenBalance(connection, address, USDC_MINT),
           getSolBalance(connection, address),
         ]);
         setHoldings((prev) =>
-          SUPPORTED_ASSETS.map((asset, i) => ({
+          PORTFOLIO_ASSETS.map((asset, i) => ({
             asset,
             balance: assetBalances[i],
             priceUsd: prev.find((h) => h.asset.mint === asset.mint)?.priceUsd ?? null,
@@ -76,14 +81,14 @@ export function usePortfolioData(): PortfolioData {
         setSolBalance(sol);
       })();
 
-      const priceIds = SUPPORTED_ASSETS.map((asset) => asset.mint).join(",");
+      const priceIds = PORTFOLIO_ASSETS.map((asset) => asset.mint).join(",");
       const pricePromise = fetch(`/api/jupiter/price?ids=${priceIds}`)
         .then((res) => (res.ok ? (res.json() as Promise<PriceResponse>) : null))
         .then((data) => {
           setHoldings((prev) => {
             const base = prev.length
               ? prev
-              : SUPPORTED_ASSETS.map((asset) => ({ asset, balance: 0, priceUsd: null, stockData: null }));
+              : PORTFOLIO_ASSETS.map((asset) => ({ asset, balance: 0, priceUsd: null, stockData: null }));
             return base.map((holding) => ({
               ...holding,
               priceUsd: data?.[holding.asset.mint]?.usdPrice ?? holding.priceUsd,
