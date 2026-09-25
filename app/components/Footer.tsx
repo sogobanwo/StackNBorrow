@@ -23,7 +23,7 @@ export default function Footer() {
           Stack stocks. Borrow against them. Never sell.
         </p>
 
-        <a href="#" aria-label="GitHub" className="text-muted transition-colors hover:text-heading">
+        <a href="https://github.com/sogobanwo/StackNBorrow" aria-label="GitHub" className="text-muted transition-colors hover:text-heading">
           <AiFillGithub className="h-8 w-8"/>
         </a>
       </div>

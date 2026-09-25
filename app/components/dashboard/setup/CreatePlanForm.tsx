@@ -30,6 +30,7 @@ export default function CreatePlanForm({
   address,
   ensureToken,
   authedFetch,
+  ensureVault,
   signTransaction,
   onPlanCreated,
   demoMode,
@@ -41,6 +42,7 @@ export default function CreatePlanForm({
   address: string | null;
   ensureToken: () => Promise<string>;
   authedFetch: (path: string, init?: RequestInit) => Promise<Response>;
+  ensureVault: () => Promise<void>;
   signTransaction: (base64Tx: string) => Promise<string>;
   onPlanCreated: () => void;
   demoMode: boolean;
@@ -109,6 +111,7 @@ export default function CreatePlanForm({
 
     try {
       await ensureToken();
+      await ensureVault();
 
       try {
         const connection = getReadonlyConnection();

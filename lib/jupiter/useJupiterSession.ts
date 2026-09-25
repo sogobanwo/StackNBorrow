@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useSigner } from "@/lib/wallet/useSigner";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { withTimeout } from "@/lib/timeout";
@@ -49,6 +49,8 @@ export interface JupiterSession {
   ensureToken: () => Promise<string>;
   /** Fetch one of our /api/jupiter/trigger/* routes with the bearer token attached. */
   authedFetch: (path: string, init?: RequestInit) => Promise<Response>;
+  /** Registers this wallet's Trigger V2 vault on first use — required before any deposit/order call. */
+  ensureVault: () => Promise<void>;
 }
 
 export function useJupiterSession(): JupiterSession {
@@ -56,6 +58,8 @@ export function useJupiterSession(): JupiterSession {
   const [token, setToken] = useState<string | null>(() => (address ? readStoredToken(address) : null));
   const [authenticating, setAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const vaultEnsuredForAddress = useRef<string | null>(null);
 
   const [tokenForAddress, setTokenForAddress] = useState(address);
   if (address !== tokenForAddress) {
@@ -129,6 +133,39 @@ export function useJupiterSession(): JupiterSession {
     }
   }, [address, signMessage]);
 
+  /**
+   * A fresh wallet has no Trigger V2 vault yet — deposit/order calls fail with
+   * "No vault registered for this user" until one is registered. Per Jupiter's docs this is a
+   * plain API call (GET /trigger/v2/vault/register), not a transaction to sign.
+   */
+  const ensureVault = useCallback(async (): Promise<void> => {
+    if (!address) {
+      throw new Error("Connect your wallet first");
+    }
+    if (vaultEnsuredForAddress.current === address) return;
+
+    const token = await ensureToken();
+    const checkRes = await withTimeout(
+      fetch("/api/jupiter/trigger/vault", { headers: { Authorization: `Bearer ${token}` } }),
+      FETCH_TIMEOUT_MS,
+      "Timed out checking your Trigger vault. Try again."
+    );
+    if (checkRes.ok) {
+      vaultEnsuredForAddress.current = address;
+      return;
+    }
+
+    const registerRes = await withTimeout(
+      fetch("/api/jupiter/trigger/vault?register=true", { headers: { Authorization: `Bearer ${token}` } }),
+      FETCH_TIMEOUT_MS,
+      "Timed out setting up your Trigger vault. Try again."
+    );
+    if (!registerRes.ok && registerRes.status !== 409) {
+      throw new Error(await readApiError(registerRes, "Could not set up your Jupiter Trigger vault. Try again."));
+    }
+    vaultEnsuredForAddress.current = address;
+  }, [address, ensureToken]);
+
   const authedFetch = useCallback(
     async (path: string, init: RequestInit = {}): Promise<Response> => {
       const token = await ensureToken();
@@ -144,5 +181,5 @@ export function useJupiterSession(): JupiterSession {
     [ensureToken]
   );
 
-  return { token, authenticating, authError, ensureToken, authedFetch };
+  return { token, authenticating, authError, ensureToken, authedFetch, ensureVault };
 }
