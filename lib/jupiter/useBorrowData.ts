@@ -5,7 +5,7 @@ import { useSigner } from "@/lib/wallet/useSigner";
 import { readApiError } from "@/lib/jupiter/apiError";
 import { getReadonlyConnection, getSplTokenBalance } from "@/lib/solana/balances";
 import { simulateTransactionBase64 } from "@/lib/solana/simulate";
-import { USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
+import { LEND_MIN_I128, USDC_DECIMALS, USDC_MINT, type XStockAsset } from "@/lib/jupiter/assets";
 import type {
   LendBorrowVault,
   LendOperateRequest,
@@ -23,6 +23,7 @@ export interface BorrowData {
   vault: LendBorrowVault | null;
   position: LendPosition | null;
   assetWalletBalance: number | null;
+  usdcWalletBalance: number | null;
   assetPriceUsd: number | null;
   collateralUiAmount: number;
   debtUiAmount: number;
@@ -36,6 +37,10 @@ export interface BorrowData {
   submitError: string | null;
   depositCollateral: (assetAmount: number) => Promise<void>;
   borrow: (usdcAmount: number) => Promise<void>;
+  repayDebt: (usdcAmount: number) => Promise<void>;
+  repayAllDebt: () => Promise<void>;
+  withdrawCollateral: (assetAmount: number) => Promise<void>;
+  withdrawAllCollateral: () => Promise<void>;
   refresh: () => void;
 }
 
@@ -47,6 +52,7 @@ export function useBorrowData(asset: XStockAsset): BorrowData {
   const [vault, setVault] = useState<LendBorrowVault | null>(null);
   const [position, setPosition] = useState<LendPosition | null>(null);
   const [assetWalletBalance, setAssetWalletBalance] = useState<number | null>(null);
+  const [usdcWalletBalance, setUsdcWalletBalance] = useState<number | null>(null);
   const [assetPriceUsd, setAssetPriceUsd] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -85,7 +91,12 @@ export function useBorrowData(asset: XStockAsset): BorrowData {
 
       const connection = getReadonlyConnection();
       if (connection) {
-        setAssetWalletBalance(await getSplTokenBalance(connection, address, asset.mint));
+        const [assetBalance, usdcBalance] = await Promise.all([
+          getSplTokenBalance(connection, address, asset.mint),
+          getSplTokenBalance(connection, address, USDC_MINT),
+        ]);
+        setAssetWalletBalance(assetBalance);
+        setUsdcWalletBalance(usdcBalance);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load your borrow position.");
@@ -163,6 +174,24 @@ export function useBorrowData(asset: XStockAsset): BorrowData {
     await operate("0", smallestUnits);
   }
 
+  async function repayDebt(usdcAmount: number): Promise<void> {
+    const smallestUnits = Math.round(usdcAmount * 10 ** USDC_DECIMALS).toString();
+    await operate("0", `-${smallestUnits}`);
+  }
+
+  async function repayAllDebt(): Promise<void> {
+    await operate("0", LEND_MIN_I128);
+  }
+
+  async function withdrawCollateral(assetAmount: number): Promise<void> {
+    const smallestUnits = Math.round(assetAmount * 10 ** asset.decimals).toString();
+    await operate(`-${smallestUnits}`, "0");
+  }
+
+  async function withdrawAllCollateral(): Promise<void> {
+    await operate(LEND_MIN_I128, "0");
+  }
+
   return {
     connected,
     onConnect: login,
@@ -172,6 +201,7 @@ export function useBorrowData(asset: XStockAsset): BorrowData {
     vault,
     position,
     assetWalletBalance,
+    usdcWalletBalance,
     assetPriceUsd,
     collateralUiAmount,
     debtUiAmount,
@@ -185,6 +215,10 @@ export function useBorrowData(asset: XStockAsset): BorrowData {
     submitError,
     depositCollateral,
     borrow,
+    repayDebt,
+    repayAllDebt,
+    withdrawCollateral,
+    withdrawAllCollateral,
     refresh: load,
   };
 }
