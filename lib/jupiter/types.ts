@@ -43,18 +43,20 @@ export interface DepositCraftResponse {
 export interface CreateDcaOrderRequest {
   depositRequestId: string; // from deposit/craft
   depositSignedTx: string; // base64 signed (not yet broadcast) deposit transaction
+  userPubkey: string; // must match the JWT
+  inputMint: string;
+  outputMint: string; // the asset being accumulated
+  inputAmount: string; // total amount to DCA, smallest units — dust from uneven division goes to the last round
   orderCount: number; // min 2
   intervalSeconds: number; // 60s - 1yr
-  triggerMint: string; // the asset being accumulated (outputMint of the deposit)
-  minPriceUsd?: string;
-  maxPriceUsd?: string;
+  minPriceUsd?: number;
+  maxPriceUsd?: number;
   beginFillAt?: string; // ISO timestamp, max 30 days out
 }
 
 export interface CreateDcaOrderResponse {
   id: string;
   txSignature: string;
-  depositConfirmed: boolean;
 }
 
 export type DcaOrderState = "active" | "past";
