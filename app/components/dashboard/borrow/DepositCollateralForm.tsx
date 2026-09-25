@@ -20,12 +20,15 @@ export default function DepositCollateralForm({
   onDeposit: (amount: number) => Promise<void>;
 }) {
   const [amount, setAmount] = useState("");
+  const requested = Number(amount) || 0;
+  const walletBalance = assetWalletBalance ?? 0;
+  const overBalance = requested > walletBalance;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const value = Number(amount);
-    if (!Number.isFinite(value) || value <= 0) return;
-    await onDeposit(value);
+    if (!Number.isFinite(requested) || requested <= 0 || overBalance) return;
+    await onDeposit(requested);
+    setAmount("");
   }
 
   const hasBalance = assetWalletBalance !== null && assetWalletBalance > 0;
@@ -73,6 +76,16 @@ export default function DepositCollateralForm({
             />
           </div>
 
+          {overBalance && (
+            <div className="flex items-start gap-2.5 rounded-xl bg-error-bg px-4 py-3 text-sm text-error-text">
+              <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>
+                That&apos;s more {asset.symbol} than you hold — you have{" "}
+                {walletBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })}.
+              </p>
+            </div>
+          )}
+
           {submitError && (
             <div className="flex items-start gap-2.5 rounded-xl bg-error-bg px-4 py-3 text-sm text-error-text">
               <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
@@ -82,7 +95,7 @@ export default function DepositCollateralForm({
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || requested <= 0 || overBalance}
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
           >
             {submitting ? "Depositing…" : "Deposit Collateral"}
