@@ -25,7 +25,7 @@ const PRESTOCKS_MINTS = new Set(PRESTOCKS_ASSETS.map((asset) => asset.mint));
  */
 export default function PreStocksPageClient() {
   const { connected, address, login, signTransaction } = useSigner();
-  const { token, authenticating, ensureToken, authedFetch } = useJupiterSession();
+  const { token, authenticating, ensureToken, authedFetch, ensureVault } = useJupiterSession();
   const [demoMode, setDemoMode] = useState(false);
 
   const [plans, setPlans] = useState<DcaOrderHistoryItem[] | null>(null);
@@ -117,6 +117,7 @@ export default function PreStocksPageClient() {
           address={address}
           ensureToken={ensureToken}
           authedFetch={authedFetch}
+          ensureVault={ensureVault}
           signTransaction={signTransaction}
           onPlanCreated={loadPlans}
           demoMode={demoMode}

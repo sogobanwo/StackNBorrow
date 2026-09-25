@@ -17,7 +17,7 @@ import type {
 
 export default function SetupPageClient() {
   const { connected, address, login, signTransaction } = useSigner();
-  const { token, authenticating, ensureToken, authedFetch } = useJupiterSession();
+  const { token, authenticating, ensureToken, authedFetch, ensureVault } = useJupiterSession();
   const [demoMode, setDemoMode] = useState(false);
 
   const [plans, setPlans] = useState<DcaOrderHistoryItem[] | null>(null);
@@ -110,6 +110,7 @@ export default function SetupPageClient() {
           address={address}
           ensureToken={ensureToken}
           authedFetch={authedFetch}
+          ensureVault={ensureVault}
           signTransaction={signTransaction}
           onPlanCreated={loadPlans}
           demoMode={demoMode}
