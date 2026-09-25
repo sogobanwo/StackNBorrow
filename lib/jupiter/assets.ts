@@ -6,7 +6,8 @@ export interface XStockAsset {
   symbol: string;
   name: string;
   decimals: number;
-  badgeColor: string; // solid Tailwind bg-* class — no gradients per design system
+  badgeColor: string; // solid Tailwind bg-* class — no gradients per design system; AssetBadge's fallback if logoUrl fails to load
+  logoUrl: string; // confirmed live via Jupiter's Token API V2 (api.jup.ag/tokens/v2/search) on 2026-09-25
   provider: "xstock" | "tessera" | "prestocks";
   lendEligible: boolean; // whether Jupiter Lend lists this mint as collateral — /borrow only offers these
 }
@@ -21,6 +22,7 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
     name: "NVIDIA xStock",
     decimals: 8,
     badgeColor: "bg-emerald-500",
+    logoUrl: "https://xstocks-metadata.backed.fi/logos/tokens/NVDAx.png",
     provider: "xstock",
     lendEligible: true,
   },
@@ -30,6 +32,7 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
     name: "S&P 500 xStock",
     decimals: 8,
     badgeColor: "bg-blue-500",
+    logoUrl: "https://xstocks-metadata.backed.fi/logos/tokens/SPYx.png",
     provider: "xstock",
     lendEligible: true,
   },
@@ -39,6 +42,7 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
     name: "Nasdaq xStock",
     decimals: 8,
     badgeColor: "bg-violet-500",
+    logoUrl: "https://xstocks-metadata.backed.fi/logos/tokens/QQQx.png",
     provider: "xstock",
     lendEligible: true,
   },
@@ -48,6 +52,7 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
     name: "Tesla xStock",
     decimals: 8,
     badgeColor: "bg-red-500",
+    logoUrl: "https://xstocks-metadata.backed.fi/logos/tokens/TSLAx.png",
     provider: "xstock",
     lendEligible: true,
   },
@@ -60,6 +65,7 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
     name: "OpenAI (Tessera)",
     decimals: 9,
     badgeColor: "bg-slate-700",
+    logoUrl: "https://cdn.tesseralab.co/tessera/tokenicon_T-OpenAI.svg",
     provider: "tessera",
     lendEligible: false,
   },
@@ -69,6 +75,7 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
     name: "Kalshi (Tessera)",
     decimals: 9,
     badgeColor: "bg-amber-600",
+    logoUrl: "https://cdn.tesseralab.co/tessera/tokenicon_T-Kalshi.svg",
     provider: "tessera",
     lendEligible: false,
   },
@@ -89,6 +96,7 @@ export const PRESTOCKS_ASSETS: readonly XStockAsset[] = [
     name: "Anthropic (PreStocks)",
     decimals: 9,
     badgeColor: "bg-orange-700",
+    logoUrl: "https://www.prestocks.com/logos/anthropic.png?cachebust=1",
     provider: "prestocks",
     lendEligible: false,
   },
@@ -98,6 +106,7 @@ export const PRESTOCKS_ASSETS: readonly XStockAsset[] = [
     name: "Anduril (PreStocks)",
     decimals: 9,
     badgeColor: "bg-stone-700",
+    logoUrl: "https://www.prestocks.com/logos/anduril.png?cachebust=1",
     provider: "prestocks",
     lendEligible: false,
   },
