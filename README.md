@@ -25,7 +25,7 @@ On-chain investing is usually all-or-nothing: you either hold your position or y
 | **`/buy`** | A one-time purchase, settled immediately via Jupiter Swap — no recurring schedule. |
 | **`/setup`** | Create a recurring buy plan — pick an asset, amount, frequency, and number of rounds. Cancel active plans anytime. |
 | **`/portfolio`** | The detailed ledger — full holdings, active orders, and order history. |
-| **`/borrow`** | Deposit your position as collateral and borrow USDC against it, with a live loan-to-value and liquidation indicator. |
+| **`/borrow`** | Deposit your position as collateral, borrow USDC against it, repay debt, or withdraw collateral — with a live loan-to-value and liquidation indicator. |
 | **`/prestocks`** | A deliberately **isolated** recurring-buy flow for PreStocks pre-IPO tokens — see [Hackathon tracks](#hackathon-tracks) for why. |
 
 All screens run against **live Solana mainnet** — real accounts, real transactions, real prices.
@@ -35,7 +35,7 @@ All screens run against **live Solana mainnet** — real accounts, real transact
 StackNBorrow doesn't deploy or touch a single custom Solana program. Every balance-moving action is a real call into Jupiter's public infrastructure:
 
 - **[Trigger API (V2)](https://dev.jup.ag/docs/trigger-api)** — creates and cancels on-chain recurring buy orders
-- **[Lend API](https://dev.jup.ag/docs/lend)** — deposits collateral and borrows against it
+- **[Lend API](https://dev.jup.ag/docs/lend)** — deposits collateral, borrows against it, repays debt, and withdraws collateral
 - **[Swap API](https://dev.jup.ag/docs/swap-api)** — one-off manual buys
 - **[Price API](https://dev.jup.ag/docs/price-api)** — live USD pricing for every asset, including a `stockData` field Jupiter attaches to tokenized-equity mints (implied company valuation) that the UI surfaces directly
 
@@ -112,6 +112,8 @@ Not Lend collateral, and PreStocks assets are additionally kept out of every sha
 - **Provider isolation by design.** PreStocks assets are structurally incapable of appearing anywhere Tessera assets do — enforced by keeping them in a separate constant and a separate page, not by convention.
 - **Demo Mode.** A toggle on `/setup` and `/prestocks` shortens the recurring interval options (1 / 2 / 5 minutes) so a live demo doesn't require waiting days between visible buys — real orders, just on a faster clock.
 - **Wallet Standard, not a custom connector.** Wallet connection auto-discovers any installed [Wallet Standard](https://github.com/wallet-standard/wallet-standard) wallet (Phantom, Solflare, etc.) — no bespoke per-wallet integration code.
+- **Full borrow lifecycle, not just borrowing.** `/borrow` covers the whole position lifecycle — deposit, borrow, repay, and withdraw — through tabs on a single page, all routed through the same Lend `/operate` endpoint with signed base-units amounts (positive = supply/borrow, negative = repay/withdraw, a sentinel value for "repay all" / "withdraw all").
+- **AI-guided onboarding.** A site-wide GuideAI assistant widget answers questions and can walk a first-time user through the stack → borrow flow without leaving the page.
 
 ## Design & motion
 
@@ -132,6 +134,7 @@ The dashboard sidebar collapses into a hamburger-triggered slide-in drawer below
 | Trading / lending infra | Jupiter Trigger V2, Lend, Swap, Price APIs |
 | Market data | [Pyth Network](https://pyth.network) (Hermes) |
 | Pre-IPO providers | [Tessera](https://tessera.pe), [PreStocks](https://prestocks.com) |
+| In-app assistant | GuideAI — AI-guided onboarding & support widget, embedded site-wide |
 
 ## Architecture
 
@@ -216,7 +219,6 @@ lib/
 
 What's deliberately out of scope for this submission, and would be next:
 
-- Repay debt / withdraw collateral (the Lend `/operate` endpoint already supports both — not wired into the UI yet)
 - Broader xStock support on `/setup` beyond the 4 Lend-eligible tickers
 - Wider Pyth entitlement (NVDA, and SPY itself rather than the VOO proxy) once available
 - Historical LTV/health charting
