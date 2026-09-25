@@ -43,7 +43,7 @@ export default function PreStocksPageClient() {
         throw new Error(await readApiError(res, "Could not load your plans."));
       }
       const data = (await res.json()) as DcaOrderHistoryResponse;
-      setPlans(data.orders.filter((order) => PRESTOCKS_MINTS.has(order.triggerMint)));
+      setPlans(data.orders.filter((order) => PRESTOCKS_MINTS.has(order.outputMint)));
     } catch (error) {
       setPlansError(error instanceof Error ? error.message : "Could not load your plans.");
     } finally {

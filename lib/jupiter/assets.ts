@@ -77,9 +77,11 @@ export const SUPPORTED_ASSETS: readonly XStockAsset[] = [
 export const DEFAULT_ASSET: XStockAsset = SUPPORTED_ASSETS[0];
 
 // PreStocks tokens — mints confirmed live via Jupiter's swap quote and price APIs on 2026-09-24.
-// Deliberately kept OUT of SUPPORTED_ASSETS and never shown on /setup, /portfolio, or /borrow —
-// PreStocks' bounty rules disqualify a submission that also integrates non-PreStocks pre-IPO
-// tokens (e.g. the Tessera assets above), so this list only ever appears on its own /prestocks page.
+// Deliberately kept OUT of SUPPORTED_ASSETS — the /setup plan-creation picker and /borrow (lend
+// collateral) never offer these, since PreStocks' bounty rules disqualify a submission that also
+// integrates non-PreStocks pre-IPO tokens (e.g. the Tessera assets above) in those product flows.
+// They ARE included in /portfolio's Holdings table (see usePortfolioData.ts) — that's the user's
+// own balance view, not a cross-provider integration surface, so it's outside the anti-mixing rule.
 export const PRESTOCKS_ASSETS: readonly XStockAsset[] = [
   {
     mint: "Pren1FvFX6J3E4kXhJuCiAD5aDmGEb7qJRncwA8Lkhw",

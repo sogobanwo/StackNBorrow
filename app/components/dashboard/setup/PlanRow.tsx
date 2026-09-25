@@ -1,6 +1,6 @@
 "use client";
 
-import { formatRelativeFuture, formatTokenAmount, symbolForTriggerMint } from "@/lib/jupiter/format";
+import { formatRelativeFuture, formatTokenAmount, symbolForMint } from "@/lib/jupiter/format";
 import type { DcaOrderHistoryItem } from "@/lib/jupiter/types";
 
 export default function PlanRow({
@@ -17,7 +17,7 @@ export default function PlanRow({
   return (
     <tr className="border-t border-border">
       <td className="whitespace-nowrap py-3.5 pr-2 font-medium text-heading">
-        {symbolForTriggerMint(plan.triggerMint)}
+        {symbolForMint(plan.outputMint)}
       </td>
       <td className="whitespace-nowrap pr-2 text-muted">${formatTokenAmount(plan.amountPerRound)} USDC</td>
       <td className="whitespace-nowrap pr-2 text-muted">

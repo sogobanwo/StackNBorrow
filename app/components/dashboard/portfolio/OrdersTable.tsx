@@ -1,6 +1,6 @@
 "use client";
 
-import { formatRelativeFuture, formatTokenAmount, symbolForTriggerMint } from "@/lib/jupiter/format";
+import { formatRelativeFuture, formatTokenAmount, symbolForMint } from "@/lib/jupiter/format";
 import type { DcaOrderHistoryItem } from "@/lib/jupiter/types";
 
 export default function OrdersTable({
@@ -33,7 +33,7 @@ export default function OrdersTable({
               {orders.map((order) => (
                 <tr key={order.id} className="border-t border-border">
                   <td className="whitespace-nowrap py-3.5 pr-2 font-medium text-heading">
-                    {symbolForTriggerMint(order.triggerMint)}
+                    {symbolForMint(order.outputMint)}
                   </td>
                   <td className="whitespace-nowrap pr-2 text-muted">
                     ${formatTokenAmount(order.amountPerRound)} USDC

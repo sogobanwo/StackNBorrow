@@ -72,7 +72,10 @@ export interface DcaOrderHistoryQuery {
 
 export interface DcaOrderHistoryItem {
   id: string;
-  triggerMint: string;
+  // The asset being accumulated. NOT `triggerMint` — that field is for price-conditional
+  // limit/trigger orders and is always null on DCA orders, confirmed live against
+  // developers.jup.ag's Trigger API docs on 2026-09-25.
+  outputMint: string;
   inputAmountInitial: string;
   inputAmountRemaining: string;
   amountPerRound: string;
