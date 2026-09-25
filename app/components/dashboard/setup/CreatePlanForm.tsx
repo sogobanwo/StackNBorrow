@@ -166,9 +166,12 @@ export default function CreatePlanForm({
         body: JSON.stringify({
           depositRequestId: deposit.requestId,
           depositSignedTx,
+          userPubkey: address,
+          inputMint: USDC_MINT,
+          outputMint: asset.mint,
+          inputAmount: totalAmountSmallestUnits,
           orderCount: rounds,
           intervalSeconds: frequencySeconds,
-          triggerMint: asset.mint,
         }),
       });
       if (!orderRes.ok) {
